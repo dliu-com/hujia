@@ -2,10 +2,10 @@ version: '3'
 
 services:
   best-friends:
-    image: deweiliu/valentine:latest
+    image: deweiliu/hujia:latest
     build:
       context: ./src
       dockerfile: Dockerfile
     ports:
       - 80:80
-    container_name: valentine-container
+    container_name: hujia-container

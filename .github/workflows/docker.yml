@@ -11,7 +11,7 @@ jobs:
       - name: Build the Docker image
         run: |
           current_time=$(date +%s)
-          docker-compose build --build-arg UPDATE_TIME=${current_time}
+          docker-compose build
           docker login --username deweiliu --password ${{ secrets.docker_access }}
           docker-compose push
           docker logout
@@ -23,7 +23,7 @@ jobs:
 
       - name: Update App service on Azure
         run: |
-          az webapp restart --name deweiliu --resource-group app-services
+          az webapp restart --name hujia --resource-group app-services
 
       - name: Logout Azure
         run: |
