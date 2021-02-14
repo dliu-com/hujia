@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-	<title>Our Love Story</title>
+	<title>Our Valentine's Day</title>
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 	<style type="text/css">
@@ -27,12 +27,14 @@
 			<span class="comments">##</span><br/>
 			i = Boy(<span class="string">"刘德威"</span>);<br/>
 			u = Girl(<span class="string">"胡佳"</span>);<br/>
-			<span class="comments"># 1 August 2020, I met you because of 麦应展's birthday. </span><br/>
+			<span class="comments"># 1 August 2020, I met you because at 麦应展's birthday. </span><br/>
 			i.meet(u)<br/>
+			<span class="comments"># Very soon, I had a crush on you!!! </span><br/>
+			i.crush_on(u)<br/>			
 			<span class="comments"># 19 September 2020, we went together. </span><br/>
 			relationship = together(u, i).on("2020-09-19")<br/>
-			<span class="comments"># 40 days later, at your birthday, You became my girlfriend (officially).</span><br/>
-			u.accepted(i).on("2020-10-29")<br/>
+			<span class="comments"># 40 days later, at your birthday, you became my girlfriend (officially).</span><br/>
+			relationship.confirm("2020-10-29")<br/>
 			<span class="comments"># Since then, we spent harmony happiness life every day.</span><br/>
 			happy(u, i)<br/>
 			<span class="comments"># We enjoy studying together. (不学习会变成傻逼）</span><br/>
@@ -43,20 +45,21 @@
 			date(u, i)<br/>
 			<span class="comments"># We enjoy vacation together.</span><br/>
 			vacation(u, i)<br/>
-			<span class="comments"># Sometimes there are a few conflicts between us.</span><br/>
-			conflict(u, i, sometimes=<span class="keyword">True</span>)<br/>
-			<span class="comments"># But we are getting more and more in harmony together.</span><br/>
-			u.in_harmony_with(i) <br/>
+			<span class="comments"># Sometimes there were a few conflicts between us.</span><br/>
+			complains = conflict(u, i, sometimes = <span class="keyword">True</span>)<br/>
+			<span class="comments"># But I appreciate every complain you have raised, so I could reflect myself.</span><br/>
+			i.appreciate(complains).self_reflect() <br/>
+			<span class="comments"># So we are getting more and more in harmony together.</span><br/>
+			u.in_harmony_with(i) <br/>			
 			i.in_harmony_with(u) <br/>
-			<span class="comments"># You are the greatest love of my life.</span><br/>
+			<span class="comments"># You are the greatest love of my life (not anyone else)!!!</span><br/>
 			while <span class="keyword">True</span>:<br/>
 			<span class="placeholder"></span><span class="keyword">if</span> u.with(i):<br/>
 			<span class="placeholder"></span><span class="placeholder"></span>u = everything<br/>
 			<span class="placeholder"></span><span class="keyword">else</span>:<br/>
 			<span class="placeholder"></span><span class="placeholder"></span>everything = u<br/>
-			<span class="comments"># Waiting me marries you, we will be the happiest couple in the world.</span><br/>
-			i.marry(u, in_the_future=<span class="keyword">True</span>)<br/>
-			i.live_happily_forever_with(u)<br/>
+			<span class="comments"># My greatest dream has been being able to live with you forever!.</span><br/>
+			relationship.last(duration = <span class="keyword">FOREVER</span>)<br/>
 			<span class="comments"># I love you forever.</span><br/>
 		</div>
 		<div id="loveHeart">
@@ -67,7 +70,7 @@
 					<div id="elapseClock"></div>
 				</div>
 				<div id="loveu">
-					Love uuuuu forever and ever.<br/>
+					Love you forever and ever.<br/>
 					<div class="signature">- 你的宝贝 ｜ 德威</div>
 				</div>
 			</div>
@@ -79,7 +82,7 @@
 	var offsetY = $("#loveHeart").height() / 2 - 55;
 	var together = new Date();
 	// 此处月份介于 0 ~ 11 之间。用本地时间表示，如 8 月要用 7 表示。
-	together.setFullYear(2020, 9, 19);
+	together.setFullYear(2020, 8, 19);
 	together.setHours(15);
 	together.setMinutes(0);
 	together.setSeconds(0);
