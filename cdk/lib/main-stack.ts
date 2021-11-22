@@ -26,6 +26,7 @@ export class CdkStack extends cdk.Stack {
       vpc: vpc,
       appId: props.appId,
       dnsName: `${props.dnsRecord}.${props.domain}`,
+      hostedZone,
     });
 
     const record = new route53.CnameRecord(this, "AliasRecord", {

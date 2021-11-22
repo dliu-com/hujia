@@ -1,7 +1,9 @@
+import * as acm from '@aws-cdk/aws-certificatemanager';
 import * as cdk from '@aws-cdk/core';
 import * as ec2 from '@aws-cdk/aws-ec2';
 import * as ecs from '@aws-cdk/aws-ecs';
 import * as elb from '@aws-cdk/aws-elasticloadbalancingv2';
+import { IHostedZone } from '@aws-cdk/aws-route53';
 
 export interface EcsStackProps extends cdk.NestedStackProps {
     vpc: ec2.IVpc;
@@ -10,6 +12,7 @@ export interface EcsStackProps extends cdk.NestedStackProps {
     albListener: elb.IApplicationListener;
     appId: number;
     dnsName: string;
+    hostedZone: IHostedZone;
 }
 
 export class EcsStack extends cdk.NestedStack {
@@ -59,6 +62,13 @@ export class EcsStack extends cdk.NestedStack {
             targetGroups: [albTargetGroup],
             conditions: [elb.ListenerCondition.hostHeaders([props.dnsName])],
         });
+
+        const certificate = new acm.Certificate(this, 'DefaultCertificate', {
+            domainName: props.dnsName,
+            validation: acm.CertificateValidation.fromDns(props.hostedZone),
+        });
+
+        props.albListener.addCertificates('HujiaCertificate', [certificate]);
     }
 }
 
