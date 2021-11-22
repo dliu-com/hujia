@@ -4,7 +4,7 @@ import * as ec2 from '@aws-cdk/aws-ec2';
 import * as elb from '@aws-cdk/aws-elasticloadbalancingv2';
 import { SubnetsStack } from './subnets-stack';
 import { EcsStack } from './ecs-stack';
-import { Duration } from '@aws-cdk/core';
+import { Duration, Tags } from '@aws-cdk/core';
 
 export interface CdkStackProps extends cdk.StackProps {
   maxAzs: number;
@@ -15,6 +15,8 @@ export interface CdkStackProps extends cdk.StackProps {
 export class CdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: CdkStackProps) {
     super(scope, id, props);
+    Tags.of(this).add('service','hujia');
+
     const { hostedZone, igwId, vpc, alb, albSecurityGroup, albListener } = this.importValues(props);
 
     const vpcStack = new SubnetsStack(this, 'SubnetsStack', { vpc: vpc, maxAzs: props.maxAzs, appId: props.appId, igwId });
