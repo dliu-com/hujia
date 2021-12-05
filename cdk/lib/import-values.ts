@@ -8,8 +8,9 @@ import { Fn } from '@aws-cdk/core';
 import { IApplicationListener, IApplicationLoadBalancer } from '@aws-cdk/aws-elasticloadbalancingv2';
 import { CdkStackProps } from './main-stack';
 import { ICluster } from '@aws-cdk/aws-ecs';
+import { ISecurityGroup } from '@aws-cdk/aws-ec2';
 
-export class ImportValues extends cdk.NestedStack implements CdkStackProps {
+export class ImportValues extends cdk.Construct implements CdkStackProps {
     public hostedZone: route53.IHostedZone;
     public igwId: string;
     public vpc: ec2.IVpc;
@@ -17,6 +18,7 @@ export class ImportValues extends cdk.NestedStack implements CdkStackProps {
     public albListener: IApplicationListener;
     public alb: IApplicationLoadBalancer;
     public cluster: ICluster;
+    public clusterSecurityGroup: ISecurityGroup;
 
     public maxAzs: number;
     public appId: number;
@@ -25,7 +27,8 @@ export class ImportValues extends cdk.NestedStack implements CdkStackProps {
     public appName: string;
     public dockerImage: string;
     public priority: number;
-    public dnsName:string;
+    public dnsName: string;
+    public hostPort: number;
 
     constructor(scope: cdk.Construct, props: CdkStackProps) {
         super(scope, 'ImportValues')
@@ -37,8 +40,8 @@ export class ImportValues extends cdk.NestedStack implements CdkStackProps {
         this.appName = props.appName;
         this.dockerImage = `deweiliu/${this.appName}`;
         this.priority = this.appId * 10;
-        this.dnsName=`${this.dnsRecord}.${this.domain}`;
-
+        this.dnsName = `${this.dnsRecord}.${this.domain}`;
+        this.hostPort = this.appId * 1000;
 
         this.hostedZone = route53.HostedZone.fromHostedZoneAttributes(scope, 'HostedZone', {
             hostedZoneId: Fn.importValue('DLIUCOMHostedZoneID'),
@@ -67,9 +70,11 @@ export class ImportValues extends cdk.NestedStack implements CdkStackProps {
             loadBalancerDnsName: Fn.importValue('Core-AlbDns'),
         });
 
+
+        this.clusterSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(scope, 'ClusterSecurityGroup', Fn.importValue('Core-ClusterSecurityGroup'));
         this.cluster = ecs.Cluster.fromClusterAttributes(scope, 'Cluster', {
             clusterName: Fn.importValue('Core-ClusterName'),
-            securityGroups: [ec2.SecurityGroup.fromSecurityGroupId(scope, 'a', Fn.importValue('Core-ClusterSecurityGroup'))],
+            securityGroups: [this.clusterSecurityGroup],
             vpc: this.vpc,
         });
     }

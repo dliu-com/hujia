@@ -3,10 +3,9 @@ import * as route53 from '@aws-cdk/aws-route53';
 import * as ec2 from '@aws-cdk/aws-ec2';
 import * as ecs from '@aws-cdk/aws-ecs';
 import * as elb from '@aws-cdk/aws-elasticloadbalancingv2';
-import { SubnetsStack } from './subnets-stack';
-import { EcsStack } from './ecs-stack';
 import { Duration, Tags } from '@aws-cdk/core';
 import { ImportValues } from './import-values';
+import * as acm from '@aws-cdk/aws-certificatemanager';
 
 export interface CdkStackProps {
   maxAzs: number;
@@ -22,56 +21,29 @@ export class CdkStack extends cdk.Stack {
 
     const get = new ImportValues(this, props);
 
-    const taskDefinition = new ecs.Ec2TaskDefinition(this, 'TaskDefinition', { networkMode: ecs.NetworkMode.AWS_VPC });
+    const taskDefinition = new ecs.Ec2TaskDefinition(this, 'TaskDefinition', { networkMode: ecs.NetworkMode.BRIDGE });
 
     taskDefinition.addContainer('Container', {
       image: ecs.ContainerImage.fromRegistry(get.dockerImage),
       containerName: `${get.appName}-container`,
       memoryReservationMiB: 256,
-      portMappings: [{ containerPort: 80, hostPort: 80, protocol: ecs.Protocol.TCP }],
+      portMappings: [{ containerPort: 80, hostPort: get.hostPort, protocol: ecs.Protocol.TCP }],
       logging: new ecs.AwsLogDriver({ streamPrefix: get.appName }),
-    });
-
-
-    const securityGroup = new ec2.SecurityGroup(this, 'SecurityGroup', { vpc: get.vpc });
-    securityGroup.connections.allowFrom(get.albSecurityGroup, ec2.Port.tcp(80), 'Allow traffic from ELB');
-
-    const subnets: ec2.ISubnet[] = [];
-
-    [...Array(get.maxAzs).keys()].forEach(azIndex => {
-      const subnet = new ec2.PublicSubnet(this, `Subnet${azIndex}`, {
-        vpcId: get.vpc.vpcId,
-        availabilityZone: cdk.Stack.of(this).availabilityZones[azIndex],
-        cidrBlock: `10.0.${get.appId}.${azIndex * 16}/28`,
-        mapPublicIpOnLaunch: true,
-      });
-      subnets.push(subnet);
-
-      subnet.addRoute(`PublicRouting${azIndex}`, {
-        routerId: get.igwId,
-        routerType: ec2.RouterType.GATEWAY,
-        destinationCidrBlock: '0.0.0.0/0',
-      })
     });
 
     const service = new ecs.Ec2Service(this, 'Service', {
       cluster: get.cluster,
       taskDefinition,
-      securityGroups: [securityGroup],
-      vpcSubnets: { subnets },
     });
+    get.clusterSecurityGroup.connections.allowFrom(get.albSecurityGroup, ec2.Port.tcp(get.hostPort), `Allow traffic from ELB for ${get.appName}`);
 
     const albTargetGroup = new elb.ApplicationTargetGroup(this, 'TargetGroup', {
       port: 80,
       protocol: elb.ApplicationProtocol.HTTP,
       healthCheck: { enabled: true },
       vpc: get.vpc,
-      targetType: elb.TargetType.IP,
-      targets: [service.loadBalancerTarget({
-        containerName: taskDefinition.defaultContainer?.containerName as string,
-        containerPort: 80, protocol: ecs.Protocol.TCP
-      })],
-      // targets:[service],
+      targetType: elb.TargetType.INSTANCE,
+      targets: [service],
     });
 
     new elb.ApplicationListenerRule(this, "ListenerRule", {
@@ -80,6 +52,13 @@ export class CdkStack extends cdk.Stack {
       targetGroups: [albTargetGroup],
       conditions: [elb.ListenerCondition.hostHeaders([get.dnsName])],
     });
+
+    const certificate = new acm.Certificate(this, 'SSL', {
+      domainName:get.dnsName,
+      validation: acm.CertificateValidation.fromDns(get.hostedZone),
+    });
+    get.albListener.addCertificates('AddCertificate', [certificate]);
+
 
     const record = new route53.CnameRecord(this, "AliasRecord", {
       zone: get.hostedZone,
