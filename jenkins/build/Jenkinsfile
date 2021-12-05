@@ -1,11 +1,11 @@
 pipeline {
     agent {
         label 'builder-slave-ubuntu'
-        timestamps ()
     }
     
     options {
         timeout(time: 30, unit: 'MINUTES')
+        timestamps ()
     }
 
     stages {
