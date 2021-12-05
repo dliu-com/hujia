@@ -3,7 +3,7 @@ import * as route53 from '@aws-cdk/aws-route53';
 import * as ec2 from '@aws-cdk/aws-ec2';
 import * as ecs from '@aws-cdk/aws-ecs';
 import * as elb from '@aws-cdk/aws-elasticloadbalancingv2';
-import { Duration, Tags } from '@aws-cdk/core';
+import { Duration } from '@aws-cdk/core';
 import { ImportValues } from './import-values';
 import * as acm from '@aws-cdk/aws-certificatemanager';
 
