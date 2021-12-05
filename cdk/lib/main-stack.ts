@@ -7,7 +7,7 @@ import { Duration, Tags } from '@aws-cdk/core';
 import { ImportValues } from './import-values';
 import * as acm from '@aws-cdk/aws-certificatemanager';
 
-export interface CdkStackProps {
+export interface CdkStackProps extends cdk.StackProps {
   maxAzs: number;
   appId: number;
   dnsRecord: string;
@@ -16,8 +16,7 @@ export interface CdkStackProps {
 }
 export class CdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: CdkStackProps) {
-    super(scope, id);
-    Tags.of(this).add('service', props.dnsRecord);
+    super(scope, id, props);
 
     const get = new ImportValues(this, props);
 
@@ -54,7 +53,7 @@ export class CdkStack extends cdk.Stack {
     });
 
     const certificate = new acm.Certificate(this, 'SSL', {
-      domainName:get.dnsName,
+      domainName: get.dnsName,
       validation: acm.CertificateValidation.fromDns(get.hostedZone),
     });
     get.albListener.addCertificates('AddCertificate', [certificate]);
