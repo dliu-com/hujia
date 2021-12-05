@@ -32,6 +32,7 @@ export class CdkStack extends cdk.Stack {
       logging: new ecs.AwsLogDriver({ streamPrefix: get.appName }),
     });
 
+
     const securityGroup = new ec2.SecurityGroup(this, 'SecurityGroup', { vpc: get.vpc });
     securityGroup.connections.allowFrom(get.albSecurityGroup, ec2.Port.tcp(80), 'Allow traffic from ELB');
 
@@ -54,11 +55,39 @@ export class CdkStack extends cdk.Stack {
     });
 
     const service = new ecs.Ec2Service(this, 'Service', {
-      cluster:get.cluster,
+      cluster: get.cluster,
       taskDefinition,
       securityGroups: [securityGroup],
       vpcSubnets: { subnets },
     });
 
+    const albTargetGroup = new elb.ApplicationTargetGroup(this, 'TargetGroup', {
+      port: 80,
+      protocol: elb.ApplicationProtocol.HTTP,
+      healthCheck: { enabled: true },
+      vpc: get.vpc,
+      targetType: elb.TargetType.IP,
+      targets: [service.loadBalancerTarget({
+        containerName: taskDefinition.defaultContainer?.containerName as string,
+        containerPort: 80, protocol: ecs.Protocol.TCP
+      })],
+      // targets:[service],
+    });
+
+    new elb.ApplicationListenerRule(this, "ListenerRule", {
+      listener: get.albListener,
+      priority: get.priority,
+      targetGroups: [albTargetGroup],
+      conditions: [elb.ListenerCondition.hostHeaders([get.dnsName])],
+    });
+
+    const record = new route53.CnameRecord(this, "AliasRecord", {
+      zone: get.hostedZone,
+      domainName: get.alb.loadBalancerDnsName,
+      recordName: props.dnsRecord,
+      ttl: Duration.hours(1),
+    });
+
+    new cdk.CfnOutput(this, 'DnsName', { value: record.domainName });
   }
 }

@@ -24,6 +24,8 @@ export class ImportValues extends cdk.NestedStack implements CdkStackProps {
     public domain: string;
     public appName: string;
     public dockerImage: string;
+    public priority: number;
+    public dnsName:string;
 
     constructor(scope: cdk.Construct, props: CdkStackProps) {
         super(scope, 'ImportValues')
@@ -34,6 +36,8 @@ export class ImportValues extends cdk.NestedStack implements CdkStackProps {
         this.domain = props.domain;
         this.appName = props.appName;
         this.dockerImage = `deweiliu/${this.appName}`;
+        this.priority = this.appId * 10;
+        this.dnsName=`${this.dnsRecord}.${this.domain}`;
 
 
         this.hostedZone = route53.HostedZone.fromHostedZoneAttributes(scope, 'HostedZone', {
