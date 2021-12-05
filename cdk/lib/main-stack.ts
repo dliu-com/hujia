@@ -1,74 +1,64 @@
 import * as cdk from '@aws-cdk/core';
 import * as route53 from '@aws-cdk/aws-route53';
 import * as ec2 from '@aws-cdk/aws-ec2';
+import * as ecs from '@aws-cdk/aws-ecs';
 import * as elb from '@aws-cdk/aws-elasticloadbalancingv2';
 import { SubnetsStack } from './subnets-stack';
 import { EcsStack } from './ecs-stack';
 import { Duration, Tags } from '@aws-cdk/core';
+import { ImportValues } from './import-values';
 
-export interface CdkStackProps extends cdk.StackProps {
+export interface CdkStackProps {
   maxAzs: number;
   appId: number;
   dnsRecord: string;
   domain: string;
+  appName: string;
 }
 export class CdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: CdkStackProps) {
-    super(scope, id, props);
-    Tags.of(this).add('service','hujia');
+    super(scope, id);
+    Tags.of(this).add('service', props.dnsRecord);
 
-    const { hostedZone, igwId, vpc, alb, albSecurityGroup, albListener } = this.importValues(props);
+    const get = new ImportValues(this, props);
 
-    const vpcStack = new SubnetsStack(this, 'SubnetsStack', { vpc: vpc, maxAzs: props.maxAzs, appId: props.appId, igwId });
+    const taskDefinition = new ecs.Ec2TaskDefinition(this, 'TaskDefinition', { networkMode: ecs.NetworkMode.AWS_VPC });
 
-    const ecs = new EcsStack(this, 'ECS', {
-      subnets: vpcStack.subnets,
-      albSecurityGroup,
-      albListener,
-      vpc: vpc,
-      appId: props.appId,
-      dnsName: `${props.dnsRecord}.${props.domain}`,
-      hostedZone,
+    taskDefinition.addContainer('Container', {
+      image: ecs.ContainerImage.fromRegistry(get.dockerImage),
+      containerName: `${get.appName}-container`,
+      memoryReservationMiB: 256,
+      portMappings: [{ containerPort: 80, hostPort: 80, protocol: ecs.Protocol.TCP }],
+      logging: new ecs.AwsLogDriver({ streamPrefix: get.appName }),
     });
 
-    const record = new route53.CnameRecord(this, "AliasRecord", {
-      zone: hostedZone,
-      domainName: alb.loadBalancerDnsName,
-      recordName: props.dnsRecord,
-      ttl: Duration.hours(1),
+    const securityGroup = new ec2.SecurityGroup(this, 'SecurityGroup', { vpc: get.vpc });
+    securityGroup.connections.allowFrom(get.albSecurityGroup, ec2.Port.tcp(80), 'Allow traffic from ELB');
+
+    const subnets: ec2.ISubnet[] = [];
+
+    [...Array(get.maxAzs).keys()].forEach(azIndex => {
+      const subnet = new ec2.PublicSubnet(this, `Subnet${azIndex}`, {
+        vpcId: get.vpc.vpcId,
+        availabilityZone: cdk.Stack.of(this).availabilityZones[azIndex],
+        cidrBlock: `10.0.${get.appId}.${azIndex * 16}/28`,
+        mapPublicIpOnLaunch: true,
+      });
+      subnets.push(subnet);
+
+      subnet.addRoute(`PublicRouting${azIndex}`, {
+        routerId: get.igwId,
+        routerType: ec2.RouterType.GATEWAY,
+        destinationCidrBlock: '0.0.0.0/0',
+      })
     });
 
-    new cdk.CfnOutput(this, 'DnsName', { value: record.domainName });
-  }
-
-  importValues(props: CdkStackProps) {
-    const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
-      hostedZoneId: cdk.Fn.importValue('DLIUCOMHostedZoneID'),
-      zoneName: props.domain,
+    const service = new ecs.Ec2Service(this, 'Service', {
+      cluster:get.cluster,
+      taskDefinition,
+      securityGroups: [securityGroup],
+      vpcSubnets: { subnets },
     });
 
-    const igwId = cdk.Fn.importValue('Core-InternetGateway');
-
-    const vpc = ec2.Vpc.fromVpcAttributes(this, 'ALBVPC', {
-      vpcId: cdk.Fn.importValue('Core-Vpc'),
-      availabilityZones: cdk.Stack.of(this).availabilityZones,
-    });
-
-    const albSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, "ALBSecurityGroup",
-      cdk.Fn.importValue('Core-AlbSecurityGroup')
-    );
-    const albListener = elb.ApplicationListener.fromApplicationListenerAttributes(this, "ELBListener", {
-      listenerArn: cdk.Fn.importValue('Core-AlbListener'),
-      securityGroup: albSecurityGroup,
-    });
-
-    const alb = elb.ApplicationLoadBalancer.fromApplicationLoadBalancerAttributes(this, 'ALB', {
-      loadBalancerArn: cdk.Fn.importValue('Core-Alb'),
-      securityGroupId: albSecurityGroup.securityGroupId,
-      loadBalancerCanonicalHostedZoneId: cdk.Fn.importValue('Core-AlbCanonicalHostedZone'),
-      loadBalancerDnsName: cdk.Fn.importValue('Core-AlbDns'),
-    });
-
-    return { hostedZone, igwId, vpc, alb, albSecurityGroup, albListener };
   }
 }
