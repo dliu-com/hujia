@@ -62,7 +62,7 @@ export class CdkStack extends cdk.Stack {
     const record = new route53.CnameRecord(this, "AliasRecord", {
       zone: get.hostedZone,
       domainName: get.alb.loadBalancerDnsName,
-      recordName: props.dnsRecord,
+      recordName: get.dnsRecord,
       ttl: Duration.hours(1),
     });
 
