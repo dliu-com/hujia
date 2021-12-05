@@ -5,18 +5,30 @@ pipeline {
     
     options {
         timeout(time: 90, unit: 'MINUTES')
+        timestamps ()
     }
 
     stages {
+        stage('Wait for Stack Ready'){
+            steps{
+                sh(script: 'aws cloudformation wait stack-update-complete --region eu-west-2 --stack-name Hujia', returnStatus: true)
+            }
+        }
+        
         stage('CDK Deploy'){
             steps{
                 dir('cdk'){
                     sh '''
                     npm install;
-                    npm run cdk-deploy;
+                    npm run deploy;
                     '''
                 }
             }
         }
     }
+    post { 
+        always { 
+            cleanWs()
+        }
+    }    
 }
