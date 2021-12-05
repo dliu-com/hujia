@@ -1,6 +1,7 @@
 pipeline {
     agent {
         label 'builder-slave-ubuntu'
+        timestamps ()
     }
     
     options {
@@ -34,4 +35,9 @@ pipeline {
             }
         }
     }
+    post { 
+        always { 
+            cleanWs()
+        }
+    }    
 }
