@@ -6,6 +6,10 @@ services:
     build:
       context: ./src
       dockerfile: Dockerfile
+      x-bake:
+        platforms:
+          - linux/amd64
+          - linux/arm64
     ports:
       - 80:80
     container_name: hujia-container

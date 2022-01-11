@@ -13,6 +13,7 @@ export interface CdkStackProps extends cdk.StackProps {
   dnsRecord: string;
   domain: string;
   appName: string;
+  instanceCount: number;
 }
 export class CdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: CdkStackProps) {
@@ -33,6 +34,7 @@ export class CdkStack extends cdk.Stack {
     const service = new ecs.Ec2Service(this, 'Service', {
       cluster: get.cluster,
       taskDefinition,
+      desiredCount: get.instanceCount,
     });
     get.clusterSecurityGroup.connections.allowFrom(get.albSecurityGroup, ec2.Port.tcp(get.hostPort), `Allow traffic from ELB for ${get.appName}`);
 
