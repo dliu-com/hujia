@@ -1,1 +1,30 @@
 /.idea
+node_modules/
+cdk.out/
+.local/
+private/
+media/
+# Personal media and scanned documents live in private S3, never in Git.
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.heic
+*.heif
+*.gif
+*.avif
+*.mp4
+*.mov
+*.m4v
+*.mp3
+*.m4a
+*.wav
+*.pdf
+# Shared DL branding icons are code assets, not personal photos.
+!src/images/dl-icon.png
+!archive/first-gift/images/dl-icon.png
+!web/icon.png
+.env*
+!\.env.example
+*.log
+.DS_Store

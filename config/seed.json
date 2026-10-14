@@ -1,0 +1,13 @@
+{
+  "settings": {
+    "id": "settings",
+    "version": 1,
+    "startDate": "2020-09-19",
+    "anniversaryDate": "2026-10-19",
+    "letter": "",
+    "letterPublished": false,
+    "coverMemoryId": ""
+  },
+  "memories": [],
+  "wishes": []
+}
