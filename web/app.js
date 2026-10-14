@@ -7,6 +7,7 @@ function link(href,text){const a=el('a',text);a.href=href;return a;}
 function renderInfo(){
   document.documentElement.lang=language==='en'?'en':'zh-CN';
   document.getElementById('about-link').textContent=t('关于','About');
+  const signOut=document.querySelector('#account a[href="/auth/logout"]');if(signOut)signOut.textContent=t('退出','Sign out');
   document.querySelectorAll('[data-language]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.language===language)));
   if(!['/about','/security'].includes(location.pathname))return;
   main.classList.add('info-page');const security=location.pathname==='/security';main.replaceChildren(el('h1',security?t('安全与隐私','Security and privacy'):t('关于这个礼物','About this gift')));
@@ -17,7 +18,7 @@ function renderInfo(){
     [t('证件脱敏','Document redaction'),t('临时驾照的证件号码、出生日期和其他敏感字段已从保存的图片中删除。姓名、照片、签发日期和地址按我们的选择保留。原始证件不会随网页发布。','The saved provisional-licence image has had its identifier, birth date and other sensitive fields permanently removed. Name, portrait, issue date and address are retained by choice. The original identity document is not published with the site.')],
     [t('一起保存回忆','Saving memories together'),t('回忆相簿支持共同编辑和原件上传，回忆册里的补写会保存到两人共用的空间。没有保存成功的文字会保留在当前浏览器，方便重新保存。','The shared album supports edits and original-media uploads. Notes in the memory book are saved to shared storage. Unsaved drafts stay in the current browser for retrying.')],
   ]:[
-    [t('为什么有这个网页','Why this website exists'),t('这是德威送给 Hujia 的一份礼物。把写过的卡片、做过的网页、一起住过的家和走过的地方，放在一个可以慢慢翻看的地方。','This is a gift from Dewei to Hujia: a place to revisit the cards, the first website, the homes and the places we have shared.')],
+    [t('为什么有这个网页','Why this website exists'),t('这是德威送给胡佳的一份礼物。把写过的卡片、做过的网页、一起住过的家和走过的地方，放在一个可以慢慢翻看的地方。','This is a gift from Dewei to Hujia: a place to revisit the cards, the first website, the homes and the places we have shared.')],
     [t('两个人继续写的回忆','Memories we can keep writing'),t('回忆可以有多张照片，也可以有保留原声的视频。我们各自记得的那句话，都可以继续补在旁边。以后，也可以把新的故事放进来。','A memory can hold several photos and videos with their original sound. Both of us can add what we remember and keep new stories here.')],
     [t('怎么运行','How it runs'),t('网页通过 S3 与 CloudFront 提供；Microsoft Entra 负责登录。回忆素材使用独立私有 S3，内容保存功能使用 Lambda 与 DynamoDB。网站代码与私人素材分开维护，DL 图标用作网站标识。','S3 and CloudFront serve the website, with Microsoft Entra for sign-in. A separate private S3 bucket stores memory media; Lambda and DynamoDB support saved content. Website code and private media are maintained separately; DL branding identifies the site.')],
   ];for(const [title,body] of sections)main.append(el('h2',title),el('p',body));main.append(link('/',t('回到首页','Back to home')));
