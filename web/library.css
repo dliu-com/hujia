@@ -31,8 +31,7 @@
 .edit-dialog h2{margin:0 0 15px}
 .edit-dialog label{display:block;font-size:13px;margin:10px 0}
 .edit-dialog input:not([type=checkbox]){display:block;margin-top:6px}
-/* dl.css v1 does not style date fields yet. */
-.edit-dialog input[type=date]{width:100%;font:inherit;padding:9px 11px;border:1px solid var(--dl-line);border-radius:var(--dl-radius-small);background:var(--dl-surface);color:var(--dl-text)}
+.edit-dialog input[type=date]{width:100%}
 .edit-dialog textarea{min-height:120px;resize:vertical}
 .date-place{display:grid;grid-template-columns:1fr 1fr;gap:15px}
 .edit-actions{display:flex;gap:12px;margin-top:16px}
