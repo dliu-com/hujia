@@ -23,7 +23,6 @@ media/
 # Shared DL branding icons are code assets, not personal photos.
 !src/images/dl-icon.png
 !archive/first-gift/images/dl-icon.png
-!web/icon.png
 .env*
 !\.env.example
 *.log

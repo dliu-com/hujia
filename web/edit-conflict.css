@@ -1,1 +1,8 @@
-.shared-edit-dialog{box-sizing:border-box;width:min(680px,92dvw);max-height:90dvh;overflow:auto;border:1px solid #e4dccd;border-radius:4px;padding:26px;background:#f5f0e7;color:#302d29;font:15px/1.75 system-ui,"PingFang SC",sans-serif}.shared-edit-dialog::backdrop{background:#181613b3}.shared-edit-dialog h2{margin:0 0 12px;font:400 27px/1.5 "Songti SC",serif}.shared-edit-dialog h3,.shared-edit-dialog label{display:block;font-size:14px;margin:16px 0 8px}.saved-shared-text{white-space:pre-wrap;max-height:22dvh;overflow:auto;background:#fffbf5;border-left:2px solid #9d403b;padding:12px}.shared-edit-dialog textarea{box-sizing:border-box;display:block;width:100%;min-height:140px;margin-top:10px;padding:12px;background:#fffaf3;color:#302d29;border:1px solid #e4dccd;font:15px/1.7 system-ui}.shared-edit-actions{display:flex;gap:12px;flex-wrap:wrap}.shared-edit-actions button{padding:10px 16px;min-height:44px;border:1px solid #9d403b;color:#9d403b;background:transparent;font:14px system-ui;cursor:pointer}.shared-edit-actions button:first-child{color:#fff;background:#9d403b}
+/* Conflict dialog layout only; buttons and fields come from dl.css. */
+.shared-edit-dialog{width:min(680px,92dvw);max-height:90dvh;overflow:auto;border:1px solid var(--dl-line);border-radius:var(--dl-radius);padding:26px;background:var(--dl-surface);color:var(--dl-text);line-height:1.75}
+.shared-edit-dialog::backdrop{background:rgba(0,0,0,.45)}
+.shared-edit-dialog h2{margin:0 0 12px}
+.shared-edit-dialog h3,.shared-edit-dialog label{display:block;font-size:14px;margin:16px 0 8px}
+.saved-shared-text{white-space:pre-wrap;max-height:22dvh;overflow:auto;background:var(--dl-panel);border-left:3px solid var(--dl-accent);border-radius:var(--dl-radius-small);padding:12px}
+.shared-edit-dialog textarea{display:block;min-height:140px;margin-top:10px;line-height:1.7}
+.shared-edit-actions{display:flex;gap:12px;flex-wrap:wrap}

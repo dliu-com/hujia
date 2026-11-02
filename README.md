@@ -12,6 +12,19 @@ Chinese memory book and shared photo album at **https://jh.dliu.com**. The publi
 
 The gift opens with a rose, the original handwritten card and a full-screen anniversary reveal. The first memory links to the original animated website. The replay types at twice the original speed and then draws the heart. Its clock follows the Spain anniversary calendar, independent of the device time zone: in Spain, 19 October 2026 at midnight is six years and one month.
 
+## Look and feel
+
+The site uses the shared dliu.com look ([kit and spec](https://files.dliu.com/dliu.com/README.md)):
+
+- Each page loads `https://files.dliu.com/dliu.com/ui/v1/dl.css` first. It uses the shared `dl-header` (DL logo and brand), `dl-nav`, `dl-button` and `dl-footer` markup and the shared `dl-language` switcher.
+- The DL icon is the favicon and the header logo.
+- `/about` and `/security` use `dl-tabs` and `dl-docs.css`.
+- `web/style.css`, `library.css` and `edit-conflict.css` hold only app-specific rules: the home hero, the album layout and the edit-conflict dialog. They use the shared `--dl-*` variables.
+- The CSP allows only the kit's paths: `style-src https://files.dliu.com/dliu.com/ui/` and `img-src https://files.dliu.com/dliu.com/`.
+- `test/shared-ui.test.js` guards these rules.
+
+The album page (`/api/library`) is Chinese-only, so it has no language switcher. The private gift and old-website pages keep their own design as memory content.
+
 ## Local preview
 
 ```sh
@@ -58,7 +71,7 @@ The uploader checks private-bucket controls and asset checksums. The importer cr
 
 CloudFront uses every edge location (`PriceClass_All`) and serves HTTP/2 and HTTP/3.
 
-- **Application code and the icon** (`web/` JS, CSS, PNG): `public, max-age=300, s-maxage=86400, stale-while-revalidate=86400`. Browsers keep these files for 5 minutes, and the edge keeps them for 1 day.
+- **Application code** (`web/` JS and CSS): `public, max-age=300, s-maxage=86400, stale-while-revalidate=86400`. Browsers keep these files for 5 minutes, and the edge keeps them for 1 day.
 - **HTML shell** (`index.html`, also served for `/`, `/about` and `/security`): `no-cache`, so it is revalidated on every request.
 - **API, sign-in, old website, private pages and media**: not cached (`CachingDisabled`, responses `no-store`). Media requests are redirected to short-lived presigned S3 URLs, so CloudFront never caches photos or videos.
 

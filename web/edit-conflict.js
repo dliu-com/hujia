@@ -11,8 +11,8 @@ window.resolveMemoryConflict = async function({draft,read,write}) {
  const input=document.createElement('textarea');input.maxLength=5000;input.value=draft;label.append(input);
  const status=document.createElement('p');status.setAttribute('role','status');
  const actions=document.createElement('div');actions.className='shared-edit-actions';
- const save=document.createElement('button');save.type='button';save.textContent='把合好的内容收好';
- const cancel=document.createElement('button');cancel.type='button';cancel.textContent='先不改';actions.append(save,cancel);
+ const save=document.createElement('button');save.type='button';save.className='dl-button dl-button-primary';save.textContent='把合好的内容收好';
+ const cancel=document.createElement('button');cancel.type='button';cancel.className='dl-button';cancel.textContent='先不改';actions.append(save,cancel);
  dialog.append(title,intro,savedLabel,saved,label,status,actions);document.body.append(dialog);dialog.showModal();input.focus();
  return new Promise(resolve=>{
   const finish=result=>{dialog.close();dialog.remove();resolve(result);};

@@ -1,3 +1,39 @@
-.library-shell{max-width:none;padding:22px 30px;height:calc(100dvh - 65px);display:grid;grid-template-columns:300px minmax(0,1fr);gap:30px;overflow:hidden}.library-sidebar{display:flex;flex-direction:column;min-height:0}.library-sidebar h1{font:400 29px "Songti SC",serif;margin:0 0 15px}.filters{display:flex;gap:7px}.filters input{min-width:0;flex:1}.filters input,.filters select{background:#fffaf3;border:1px solid var(--line);padding:10px;font:14px system-ui;border-radius:3px}.memory-list{overflow:auto;flex:1;margin:16px 0}.memory-row{display:block;width:100%;text-align:left;border:0;border-left:2px solid transparent;border-bottom:1px solid var(--line);background:transparent;padding:13px 12px;color:var(--text);cursor:pointer}.memory-row strong{display:block;font:400 18px "Songti SC",serif}.memory-row small{display:block;color:var(--muted);font-size:11px;line-height:1.6;margin-top:6px}.memory-row[aria-pressed=true]{background:#fffaf3;border-left-color:var(--accent)}button.button{background:transparent;color:var(--accent);font:14px system-ui;cursor:pointer}.library-detail{min-width:0;min-height:0;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(270px,.75fr);gap:25px;align-items:center}.memory-media{position:relative;min-width:0;min-height:0;height:100%;display:flex;align-items:center;justify-content:center}.memory-media img,.memory-media video{max-height:100%;max-width:100%;width:auto;height:auto;display:block;object-fit:contain}.original-link{position:absolute;bottom:6px;left:6px;background:#fffaf3eb;border:1px solid var(--line);padding:6px 10px;font-size:12px;text-decoration:none}.media-column{height:100%;min-height:0;display:flex;flex-direction:column}.media-column .memory-media{flex:1}.photo-navigation{display:flex;justify-content:center;align-items:center;gap:14px;margin-top:12px;font-size:12px}.photo-navigation button{min-height:40px;padding:8px 14px;border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:3px}.photo-navigation button:disabled{opacity:.4}.memory-text{overflow:auto;max-height:100%;padding:5px 0}.memory-text h2{font-size:31px;margin:0 0 12px}.memory-text .caption{white-space:pre-wrap;font:16px/1.85 "Songti SC",serif;margin:18px 0}.memory-text label{display:block;margin-top:16px;font-size:13px;color:var(--muted)}textarea{box-sizing:border-box;width:100%;background:#fffaf3;border:1px solid var(--line);color:var(--text);padding:12px;font:15px/1.7 system-ui;min-height:100px;resize:vertical;margin:8px 0 12px}.muted,.status{font-size:12px;color:var(--muted)}.upload-label{display:inline-block!important;cursor:pointer}.upload-label input{display:block;font-size:12px;margin-top:9px;max-width:100%}.memory-actions{display:flex;gap:12px;flex-wrap:wrap}.edit-dialog{border:1px solid var(--line);padding:28px;background:var(--bg);color:var(--text);width:min(620px,92dvw);max-height:90dvh;overflow:auto}.edit-dialog::backdrop{background:#181613aa}.edit-dialog h2{margin:0 0 15px}.edit-dialog label{display:block;font-size:13px;margin:10px 0}.edit-dialog input:not([type=checkbox]){display:block;width:100%;padding:10px;margin-top:6px;border:1px solid var(--line);background:#fffaf3;font:15px system-ui}.date-place{display:grid;grid-template-columns:1fr 1fr;gap:15px}.edit-actions{display:flex;gap:12px;margin-top:16px}
-@media(max-width:800px){.library-shell{height:auto;overflow:visible;padding:24px 20px;grid-template-columns:1fr;gap:25px}.library-sidebar{max-height:370px}.library-detail{grid-template-columns:1fr}.media-column{min-height:260px;height:auto}.memory-media{min-height:220px}.memory-media img,.memory-media video{max-height:65dvh}.memory-text{overflow:visible}.date-place{grid-template-columns:1fr}.edit-dialog{padding:20px}}
-.upload-label{padding:10px 14px;border:1px solid var(--accent);border-radius:3px;color:var(--accent)!important;position:relative}.upload-label input{position:absolute!important;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);margin:0!important;opacity:0}.upload-label:focus-within{outline:2px solid var(--accent);outline-offset:3px}
+/* Album layout only; header, buttons, fields, footer and colours come from dl.css. */
+.library-page{height:100dvh}
+.library-shell{flex:1 1 0;min-height:0;display:grid;grid-template-columns:300px minmax(0,1fr);gap:30px;overflow:hidden}
+.library-sidebar{display:flex;flex-direction:column;min-height:0}
+.library-sidebar h1{margin:0 0 15px}
+.filters{display:flex;gap:8px}.filters input{flex:1;min-width:0}
+.memory-list{overflow:auto;flex:1;margin:16px 0}
+.memory-row{display:block;width:100%;text-align:left;border:0;border-left:3px solid transparent;border-bottom:1px solid var(--dl-line);background:transparent;padding:13px 12px;color:var(--dl-text);font:inherit;cursor:pointer}
+.memory-row:hover{background:var(--dl-panel)}
+.memory-row strong{display:block;font-size:16px;font-weight:600}
+.memory-row small{display:block;color:var(--dl-muted);font-size:12px;line-height:1.6;margin-top:6px}
+.memory-row[aria-pressed=true]{background:var(--dl-accent-soft);border-left-color:var(--dl-accent)}
+.library-detail{min-width:0;min-height:0;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(270px,.75fr);gap:25px;align-items:center}
+.media-column{height:100%;min-height:0;display:flex;flex-direction:column}
+.memory-media{position:relative;flex:1;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center}
+.memory-media img,.memory-media video{max-height:100%;max-width:100%;width:auto;height:auto;display:block;object-fit:contain;border-radius:var(--dl-radius)}
+.original-link{position:absolute;bottom:6px;left:6px;padding:6px 10px;border:1px solid var(--dl-line);border-radius:var(--dl-radius-small);background:var(--dl-surface);font-size:12px}
+.photo-navigation{display:flex;justify-content:center;align-items:center;gap:14px;margin-top:12px;font-size:12px;color:var(--dl-muted)}
+.memory-text{overflow:auto;max-height:100%;padding:5px 0}
+.memory-text h2{font-size:28px;margin:0 0 12px}
+.memory-text .caption{white-space:pre-wrap;line-height:1.85;margin:18px 0}
+.memory-text label{display:block;margin-top:16px;font-size:13px;color:var(--dl-muted)}
+.memory-text textarea{min-height:100px;resize:vertical;line-height:1.7;margin:8px 0 12px}
+.memory-actions{display:flex;gap:12px;flex-wrap:wrap}
+.status{font-size:12px;color:var(--dl-muted)}
+.memory-text label.upload-label{display:inline-flex;position:relative;color:var(--dl-text)}
+.upload-label input{position:absolute!important;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);margin:0!important;opacity:0}
+.upload-label:focus-within{outline:2px solid var(--dl-accent);outline-offset:2px}
+.edit-dialog{border:1px solid var(--dl-line);border-radius:var(--dl-radius);padding:28px;background:var(--dl-surface);color:var(--dl-text);width:min(620px,92dvw);max-height:90dvh;overflow:auto}
+.edit-dialog::backdrop{background:rgba(0,0,0,.45)}
+.edit-dialog h2{margin:0 0 15px}
+.edit-dialog label{display:block;font-size:13px;margin:10px 0}
+.edit-dialog input:not([type=checkbox]){display:block;margin-top:6px}
+/* dl.css v1 does not style date fields yet. */
+.edit-dialog input[type=date]{width:100%;font:inherit;padding:9px 11px;border:1px solid var(--dl-line);border-radius:var(--dl-radius-small);background:var(--dl-surface);color:var(--dl-text)}
+.edit-dialog textarea{min-height:120px;resize:vertical}
+.date-place{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.edit-actions{display:flex;gap:12px;margin-top:16px}
+@media(max-width:800px){.library-page{height:auto}.library-shell{flex:1 0 auto;overflow:visible;grid-template-columns:1fr;gap:25px}.library-sidebar{max-height:370px}.library-detail{grid-template-columns:1fr}.media-column{min-height:260px;height:auto}.memory-media{min-height:220px}.memory-media img,.memory-media video{max-height:65dvh}.memory-text{overflow:visible}.date-place{grid-template-columns:1fr}.edit-dialog{padding:20px}}
