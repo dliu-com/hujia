@@ -54,6 +54,18 @@ node scripts/import-memories.js .local/book-content.json
 
 The uploader checks private-bucket controls and asset checksums. The importer creates missing records without overwriting shared edits. Videos are played with their original sound. Uploaded files are never resized or reencoded. Video excerpts use codec stream copies.
 
+## Edge caching and clearing
+
+CloudFront uses every edge location (`PriceClass_All`) and serves HTTP/2 and HTTP/3.
+
+- **Application code and the icon** (`web/` JS, CSS, PNG): `public, max-age=300, s-maxage=86400, stale-while-revalidate=86400`. Browsers keep these files for 5 minutes, and the edge keeps them for 1 day.
+- **HTML shell** (`index.html`, also served for `/`, `/about` and `/security`): `no-cache`, so it is revalidated on every request.
+- **API, sign-in, old website, private pages and media**: not cached (`CachingDisabled`, responses `no-store`). Media requests are redirected to short-lived presigned S3 URLs, so CloudFront never caches photos or videos.
+
+Clearing: each `npm run deploy` uploads `web/` and invalidates `/*`.
+
+Automatic S3-event clearing (EventBridge → Lambda → CloudFront invalidation) is **not used here, by design**. Only the deployment writes to the public site bucket, and that deployment already clears the edge. Uploads and curated media go to the private bucket, which CloudFront doesn't cache. Leaving it out also saves the shared free allowance of 1,000 invalidation paths a month. Add automatic clearing only if something starts changing edge-cached files outside a deploy.
+
 ## Privacy and recovery
 
 See [media privacy](docs/media-privacy.md). S3 versioning, retained storage resources and DynamoDB point-in-time recovery protect stored content. Media links expire after five minutes. Unsaved text remains in the browser until it is saved successfully.
