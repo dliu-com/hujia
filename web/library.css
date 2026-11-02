@@ -31,7 +31,6 @@
 .edit-dialog h2{margin:0 0 15px}
 .edit-dialog label{display:block;font-size:13px;margin:10px 0}
 .edit-dialog input:not([type=checkbox]){display:block;margin-top:6px}
-.edit-dialog input[type=date]{width:100%}
 .edit-dialog textarea{min-height:120px;resize:vertical}
 .date-place{display:grid;grid-template-columns:1fr 1fr;gap:15px}
 .edit-actions{display:flex;gap:12px;margin-top:16px}
