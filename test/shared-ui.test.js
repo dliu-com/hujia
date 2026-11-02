@@ -10,25 +10,23 @@ const DL_ICON='https://files.dliu.com/dliu.com/favicon.png';
 const pages={'web/index.html':read('web/index.html'),'lambda/api/library.html':read('lambda/api/library.html')};
 const stylesheets=html=>[...html.matchAll(/<link rel="stylesheet" href="([^"]+)">/g)].map(m=>m[1]);
 
-test('every page loads the shared stylesheet before its own and uses the DL icon as favicon',()=>{
+test('every page loads the shared stylesheet before its own and uses the app logo as favicon',()=>{
   for(const [file,html] of Object.entries(pages)){
     const styles=stylesheets(html);
     assert.equal(styles[0],DL_CSS,file);
     assert.ok(styles.includes('/style.css'),file);
-    assert.match(html,new RegExp(`<link rel="icon" type="image/png" href="${DL_ICON}">`),file);
-    assert.doesNotMatch(html,/\/icon\.png/,file);
+    assert.ok(html.includes('<link rel="icon" type="image/png" href="/icon.png">'),file);
   }
-  assert.equal(fs.existsSync(path.join(root,'web/icon.png')),false);
+  assert.ok(fs.existsSync(path.join(root,'web/icon.png')));
 });
 
 test('every page has the shared header, main and footer',()=>{
   for(const [file,html] of Object.entries(pages)){
     assert.match(html,/<body class="dl-page[" ]/,file);
-    assert.ok(html.includes(`<a class="dl-logo" href="https://dliu.com" aria-label="dliu.com"><img src="${DL_ICON}"`),file);
-    assert.ok(html.includes('<a class="dl-brand" href="/">胡佳 · 德威</a>'),file);
+    assert.ok(html.includes('<a class="dl-brand" href="/"><img class="dl-logo" src="/icon.png" alt="" width="32" height="32">胡佳 · 德威</a>'),file);
     assert.match(html,/<nav class="dl-nav"/,file);
     assert.match(html,/<main [^>]*class="dl-main[" ]/,file);
-    assert.ok(html.includes('<footer class="dl-footer"><a href="https://dliu.com">dliu.com</a>'),file);
+    assert.ok(html.includes(`<footer class="dl-footer"><a class="dl-footer-logo" href="https://dliu.com" aria-label="dliu.com"><img src="${DL_ICON}" alt="" width="24" height="24"></a><a href="https://dliu.com">dliu.com</a>`),file);
   }
 });
 

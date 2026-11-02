@@ -16,8 +16,9 @@ The gift opens with a rose, the original handwritten card and a full-screen anni
 
 The site uses the shared dliu.com look ([kit and spec](https://files.dliu.com/dliu.com/README.md)):
 
-- Each page loads `https://files.dliu.com/dliu.com/ui/v1/dl.css` first. It uses the shared `dl-header` (DL logo and brand), `dl-nav`, `dl-button` and `dl-footer` markup and the shared `dl-language` switcher.
-- The DL icon is the favicon and the header logo.
+- Each page loads `https://files.dliu.com/dliu.com/ui/v1/dl.css` first. It uses the shared `dl-header`, `dl-nav`, `dl-button` and `dl-footer` markup and the shared `dl-language` switcher.
+- Top left, the app's logo (`web/icon.png`, also the favicon) and name form one `dl-brand` link home. jh's logo has always been the DL mark; the original portrait favicon stays out of the published code for privacy.
+- Every footer starts with the shared DL logo (`dl-footer-logo`), linking to dliu.com.
 - `/about` and `/security` use `dl-tabs` and `dl-docs.css`.
 - `web/style.css`, `library.css` and `edit-conflict.css` hold only app-specific rules: the home hero, the album layout and the edit-conflict dialog. They use the shared `--dl-*` variables.
 - The CSP allows only the kit's paths: `style-src https://files.dliu.com/dliu.com/ui/` and `img-src https://files.dliu.com/dliu.com/`.
