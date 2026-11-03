@@ -49,7 +49,7 @@ test('the handler answers /health without reading cookies, headers, the query st
   assert.notEqual(post.statusCode,200);
 });
 
-test('the function keys agree across /health, /docs/health and /docs/health.md',()=>{
+test('the function keys agree across /health, the Testing tab and /docs/health.md',()=>{
   const mdFunctions=mdRows(section(md,'## Functions')).map(r=>r[0]);
   const pageFunctions=[...page.matchAll(/data-function="([a-z]+)"/g)].map(m=>m[1]);
   assert.deepEqual(pageFunctions,mdFunctions);
@@ -60,30 +60,38 @@ test('the function keys agree across /health, /docs/health and /docs/health.md',
   for(const key of mdRows(section(md,'## Guest checks')).map(r=>r[0]))assert.ok(mdFunctions.includes(key),key);
 });
 
-test('the guest checks and the /health details on the page match the Markdown file',()=>{
+test('the Markdown file has every guest check, and the Testing tab\'s numbers and chart follow from it',()=>{
   const guest=mdRows(section(md,'## Guest checks')),reads=mdRows(section(md,'## Health endpoint'));
-  const rows=htmlRows(page);
-  assert.deepEqual(rows.slice(0,guest.length),guest);
-  assert.deepEqual(rows.slice(guest.length),reads);
   for(const [,method,url,status] of guest){assert.match(method,/^(GET|HEAD)$/);assert.match(url,/^https:\/\/jh\.dliu\.com\//);assert.match(status,/^\d{3}$/);}
   assert.ok(guest.some(r=>r[2]==='https://jh.dliu.com/auth/login'&&r[3]==='302'&&r[5].includes('https://login.microsoftonline.com/')));
   assert.ok(guest.some(r=>r[2]==='https://jh.dliu.com/api/story'&&r[3]==='401'));
+  assert.deepEqual(reads.map(r=>r[0]),KEYS);
+  const functions=mdRows(section(md,'## Functions')).map(r=>r[0]);
+  assert.equal(page.match(/data-count="functions">(\d+)</)[1],String(functions.length));
+  assert.equal(page.match(/data-count="checks">(\d+)</)[1],String(guest.length+1),'guest checks + /health');
+  const bars=[...page.matchAll(/class="health-chart-bar" data-checks="(\d+)"/g)].map(m=>Number(m[1]));
+  assert.deepEqual(bars,functions.map(key=>guest.filter(r=>r[0]===key).length+(KEYS.includes(key)?1:0)));
+  for(const n of new Set(bars))assert.ok(read('web/style.css').includes(`.health-chart-bar[data-checks="${n}"]{width:`),`bar width for ${n}`);
+  // Each endpoint the tab names is one the Markdown file tests.
+  const tested=new Set([...guest.map(r=>new URL(r[2]).pathname),'/health']);
+  for(const [p] of page.replace('href="/docs/health.md"','').matchAll(/\/(?:api|auth|health|docs)[a-z\/]*/g))assert.ok(tested.has(p),p);
 });
 
-test('the Testing tab (/docs#health) has a diagram, plain lines, and every technical detail folded',()=>{
+test('the Testing tab (/docs#health) shows flows, numbers, a table and a chart, without exact technical details',()=>{
   assert.match(page,/data-path="\/docs#health"/);
   assert.match(html,/<a href="\/docs#health"><span lang="zh-CN">测试<\/span><span lang="en">Testing<\/span><\/a>/);
   assert.doesNotMatch(html,/href="\/docs\/health"/);
   assert.match(read('web/app.js'),/location\.hash==='#health'\?'\/docs#health'/);
   assert.match(page,/class="dg-flow"/);assert.ok((page.match(/class="dg-step/g)||[]).length>=4);assert.match(page,/class="dg-arrow"/);
   for(const result of ['dg-good','dg-warn','dg-bad'])assert.match(page,new RegExp(`class="dg-step ${result}"`),result);
-  const details=[...page.matchAll(/<details\b[^>]*>/g)].map(m=>m[0]);
-  assert.ok(details.length>=2);for(const tag of details)assert.doesNotMatch(tag,/\bopen\b/);
-  // Outside the folds: no code, tables, URLs or status codes.
-  const unfolded=page.replace(/<details\b[\s\S]*?<\/details>/g,'');
-  assert.doesNotMatch(unfolded,/<code>|<pre|<table|https:\/\/|\b(200|302|401|503)\b|application\//);
-  assert.match(page,/<a href="\/docs\/health\.md">Full technical version \(Markdown\)<\/a>/);
+  assert.ok((page.match(/class="dg-stat"/g)||[]).length>=4);
+  assert.match(page,/<table>/);assert.equal((page.match(/<tr data-function=/g)||[]).length,6);
+  assert.match(page,/class="health-chart"/);
   assert.match(page,/lang="zh-CN">测不到的部分/);assert.match(section(md,'## Not tested'),/upload/);
+  // High-level endpoint names are fine; exact details are not: no code, folds, full URLs, methods, status codes,
+  // headers, content types or JSON.
+  assert.doesNotMatch(page,/<code|<pre|<details|https?:\/\/|\b(GET|HEAD|POST)\b|\b(200|301|302|401|403|404|503)\b|application\/|text\/|Content-Type|Cache-Control|Authorization|cookie|[{}]/i);
+  assert.match(page,/<p><a href="\/docs\/health\.md"><span lang="zh-CN">[^<]+<\/span><span lang="en">Technical version for machines \(Markdown\)<\/span><\/a><\/p>\s*$/);
 });
 
 test('/docs/health moves to /docs#health, /health is routed, and health.md is deployed as Markdown',()=>{

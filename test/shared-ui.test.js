@@ -40,12 +40,12 @@ test('the bilingual pages use the shared sign-in button and language switcher',(
   }
 });
 
-test('/docs uses the shared docs stylesheet and tabs for architecture, cost and security',()=>{
+test('/docs uses the shared docs stylesheet and tabs for architecture, cost, security and testing',()=>{
   const html=pages['web/docs.html'],styles=stylesheets(html);
   assert.equal(styles[1],DL_DOCS_CSS);
   assert.match(html,/<main id="main" class="dl-main dl-docs-main">/);
   assert.match(html,/<nav class="dl-tabs" aria-label="Docs sections">/);
-  for(const [href,zh,en] of [['/docs','技术架构','Technical architecture'],['/docs/cost','运行成本','Cost'],['/docs/security','安全','Security']]){
+  for(const [href,zh,en] of [['/docs','架构','Architecture'],['/docs/cost','运行成本','Cost'],['/docs/security','安全','Security']]){
     assert.ok(html.includes(`<a href="${href}"`)&&html.includes(`<span lang="zh-CN">${zh}</span><span lang="en">${en}</span>`),href);
     assert.ok(html.includes(`<article class="dl-docs" id="`)&&html.includes(`data-path="${href}">`),href);
   }

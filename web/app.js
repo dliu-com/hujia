@@ -12,7 +12,7 @@ function renderDocs(){
   const current=[...sections].some(s=>s.dataset.path===path)?path:'/docs';
   sections.forEach(s=>{s.hidden=s.dataset.path!==current;});
   document.querySelectorAll('.dl-tabs a').forEach(a=>{if(a.getAttribute('href')===current)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
-  const title={'/docs':t('技术架构','Technical architecture'),'/docs/cost':t('运行成本','Cost'),'/docs/security':t('安全与隐私','Security and privacy'),'/docs#health':t('网站怎么被测试','How the site is tested')}[current];
+  const title={'/docs':t('架构','Architecture'),'/docs/cost':t('运行成本','Cost'),'/docs/security':t('安全与隐私','Security and privacy'),'/docs#health':t('网站怎么被测试','How the site is tested')}[current];
   document.title=`${title} · ${t('文档','Docs')} · 胡佳 · 德威`;
 }
 function renderLanguage(){

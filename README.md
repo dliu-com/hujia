@@ -20,7 +20,7 @@ The site uses the shared dliu.com look ([kit and spec](https://files.dliu.com/dl
 - Top left, the app's logo (`web/icon.png`, also the favicon) and name form one `dl-brand` link home. jh's logo has always been the DL mark; the original portrait favicon stays out of the published code for privacy.
 - Every footer starts with the shared DL logo (`dl-footer-logo`), linking to dliu.com.
 - The header ends its links with a `文档`/`Docs` button, and every footer reads `dliu.com · 文档`.
-- `/docs` (`web/docs.html`) has three `dl-tabs` and loads `dl-docs.css`: Technical architecture (`/docs`), Cost (`/docs/cost`), Security (`/docs/security`) and Testing (`/docs#health`). The old `/about`, `/security` and `/docs/health` addresses 301-redirect there. There is no API tab: `/api/*` serves only this site's pages and needs our sign-in.
+- `/docs` (`web/docs.html`) has three `dl-tabs` and loads `dl-docs.css`: Architecture (`/docs`), Cost (`/docs/cost`), Security (`/docs/security`) and Testing (`/docs#health`). The old `/about`, `/security` and `/docs/health` addresses 301-redirect there. There is no API tab: `/api/*` serves only this site's pages and needs our sign-in.
 - `web/style.css`, `library.css` and `edit-conflict.css` hold only app-specific rules: the home hero, the album layout and the edit-conflict dialog. They use the shared `--dl-*` variables.
 - The CSP allows only the kit's paths: `style-src https://files.dliu.com/dliu.com/ui/` and `img-src https://files.dliu.com/dliu.com/`.
 - `test/shared-ui.test.js` guards these rules.

@@ -30,14 +30,14 @@
   </header>
   <main id="main" class="dl-main dl-docs-main">
     <nav class="dl-tabs" aria-label="Docs sections">
-      <a href="/docs" aria-current="page"><span lang="zh-CN">技术架构</span><span lang="en">Technical architecture</span></a>
+      <a href="/docs" aria-current="page"><span lang="zh-CN">架构</span><span lang="en">Architecture</span></a>
       <a href="/docs/cost"><span lang="zh-CN">运行成本</span><span lang="en">Cost</span></a>
       <a href="/docs/security"><span lang="zh-CN">安全</span><span lang="en">Security</span></a>
       <a href="/docs#health"><span lang="zh-CN">测试</span><span lang="en">Testing</span></a>
     </nav>
 
     <article class="dl-docs" id="architecture" data-path="/docs">
-      <h1><span lang="zh-CN">技术架构</span><span lang="en">Technical architecture</span></h1>
+      <h1><span lang="zh-CN">架构</span><span lang="en">Architecture</span></h1>
       <p class="lead" lang="zh-CN">这是德威送给胡佳的一份礼物：把写过的卡片、做过的网页、一起住过的家和走过的地方，放在一个可以慢慢翻看的地方。访客只看到入口和两张精选风景照片；其余回忆都需要用 Microsoft 账号登录。</p>
       <p class="lead" lang="en">A gift from Dewei to Hujia: a place to revisit the cards, the first website, the homes and the places we have shared. Visitors see only the entrance and two selected scenery photos; every other memory needs a Microsoft sign-in.</p>
       <div class="dg-stats">
@@ -446,75 +446,70 @@
     </article>
     <article class="dl-docs" id="health" data-path="/docs#health">
       <h1><span lang="zh-CN">网站怎么被测试</span><span lang="en">How the site is tested</span></h1>
-      <p class="lead" lang="zh-CN">status.dliu.com 每 15 分钟以访客身份检查一次这个网站：不登录，只读，不改变任何内容，也看不到任何私人回忆。</p>
-      <p class="lead" lang="en">Every 15 minutes status.dliu.com checks this site as a guest: it never signs in, only reads, changes nothing, and sees none of the private memories.</p>
-      <div class="dg-flow" aria-label="How the site is tested">
-        <div class="dg-step dg-untrusted"><span class="dg-num">1</span><span class="dg-text"><strong>status.dliu.com</strong><small lang="zh-CN">访客身份，每 15 分钟</small><small lang="en">as a guest, every 15 minutes</small></span></div>
-        <span class="dg-arrow" aria-hidden="true">→</span>
-        <div class="dg-step dg-edge"><span class="dg-num">2</span><span class="dg-text"><strong lang="zh-CN">公开页面和地址</strong><strong lang="en">Public pages and addresses</strong><small lang="zh-CN">入口、文档、两张风景照片、登录跳转；私人内容必须拒绝访客</small><small lang="en">entrance, docs, two scenery photos, the sign-in redirect; private content must refuse guests</small></span></div>
-        <span class="dg-arrow" aria-hidden="true">→</span>
-        <div class="dg-step dg-app"><span class="dg-num">3</span><span class="dg-text"><strong>/health</strong><small lang="zh-CN">网站自己检查后台，最多每分钟一次</small><small lang="en">the site checks its back end, at most once a minute</small></span></div>
-        <span class="dg-arrow" aria-hidden="true">→</span>
-        <div class="dg-step dg-private"><span class="dg-num">4</span><span class="dg-text"><strong lang="zh-CN">每个依赖读一次</strong><strong lang="en">One read per dependency</strong><small lang="zh-CN">回忆数据库、私人媒体存储、登录设置</small><small lang="en">memory database, private media storage, sign-in settings</small></span></div>
-      </div>
-      <div class="dg-flow" aria-label="Results">
-        <div class="dg-step dg-good"><span class="dg-text"><strong lang="zh-CN">正常</strong><strong lang="en">Pass</strong><small lang="zh-CN">一切如预期</small><small lang="en">everything as expected</small></span></div>
-        <div class="dg-step dg-warn"><span class="dg-text"><strong lang="zh-CN">变慢</strong><strong lang="en">Warn</strong><small lang="zh-CN">能用，但比平时慢</small><small lang="en">working, but slower than usual</small></span></div>
-        <div class="dg-step dg-bad"><span class="dg-text"><strong lang="zh-CN">故障</strong><strong lang="en">Fail</strong><small lang="zh-CN">连续两次失败才算故障</small><small lang="en">down after two failed runs in a row</small></span></div>
+      <p class="lead" lang="zh-CN">status.dliu.com 定时以访客身份检查这个网站：不登录，只看，不改变任何内容，也看不到任何私人回忆。</p>
+      <p class="lead" lang="en">status.dliu.com regularly checks this site as a guest: it never signs in, only looks, changes nothing, and sees none of the private memories.</p>
+      <div class="dg-stats">
+        <div class="dg-stat"><span class="dg-text"><strong data-count="functions">6</strong><small lang="zh-CN">项功能被测试</small><small lang="en">functions tested</small></span></div>
+        <div class="dg-stat"><span class="dg-text"><strong data-count="checks">9</strong><small lang="zh-CN">个检查，每轮都做</small><small lang="en">checks in every run</small></span></div>
+        <div class="dg-stat"><span class="dg-text"><strong>15 min</strong><small lang="zh-CN">每 15 分钟一轮</small><small lang="en">a run every 15 minutes</small></span></div>
+        <div class="dg-stat"><span class="dg-text"><strong>3</strong><small lang="zh-CN">个地方：爱尔兰、美国东部、东京</small><small lang="en">places: Ireland, US East, Tokyo</small></span></div>
+        <div class="dg-stat"><span class="dg-text"><strong>0</strong><small lang="zh-CN">次登录，0 处改动</small><small lang="en">sign-ins, 0 changes</small></span></div>
       </div>
 
-      <h2><span lang="zh-CN">检查的功能</span><span lang="en">What is checked</span></h2>
-      <ul class="health-functions">
-        <li data-function="pages"><strong lang="zh-CN">页面</strong><strong lang="en">Pages</strong>: <span lang="zh-CN">入口和文档页能打开。如果失败：谁都打不开这个网站。</span><span lang="en">The entrance and these docs open. If down: nobody can open the site.</span></li>
-        <li data-function="scenery"><strong lang="zh-CN">公开风景照片</strong><strong lang="en">Public scenery photos</strong>: <span lang="zh-CN">入口上的两张风景照片能显示。如果失败：入口还能打开，只是没有照片。</span><span lang="en">The two scenery photos on the entrance load. If down: the entrance opens without its photos.</span></li>
-        <li data-function="signin"><strong lang="zh-CN">Microsoft 登录</strong><strong lang="en">Microsoft sign-in</strong>: <span lang="zh-CN">“登录”能把人带到 Microsoft，网站能读到登录设置。如果失败：我们登录不了。</span><span lang="en">"Sign in" takes you to Microsoft, and the site can read its sign-in settings. If down: we can't sign in.</span></li>
-        <li data-function="private"><strong lang="zh-CN">隐私门</strong><strong lang="en">Privacy gate</strong>: <span lang="zh-CN">没登录的人打开私人回忆会被拒绝。如果失败：要么网站出了问题，要么私人内容可能对外打开了。</span><span lang="en">Private memories refuse anyone who isn't signed in. If down: either the site is broken or private content may be open.</span></li>
-        <li data-function="memories"><strong lang="zh-CN">回忆存储</strong><strong lang="en">Memory storage</strong>: <span lang="zh-CN">保存回忆文字的数据库能回应。如果失败：回忆打不开，也保存不了。</span><span lang="en">The database holding memory text answers. If down: memories won't open or save.</span></li>
-        <li data-function="media"><strong lang="zh-CN">私人媒体存储</strong><strong lang="en">Private media storage</strong>: <span lang="zh-CN">存放原始照片和视频的私有存储能回应。如果失败：照片和视频打不开。</span><span lang="en">The private storage holding original photos and videos answers. If down: photos and videos won't open.</span></li>
-      </ul>
+      <h2><span lang="zh-CN">一轮测试</span><span lang="en">One test run</span></h2>
+      <div class="dg-flow">
+        <div class="dg-step dg-untrusted"><span class="dg-num">1</span><span class="dg-text"><strong>status.dliu.com</strong><small lang="zh-CN">以访客身份，从 3 个地方来访</small><small lang="en">visits as a guest, from 3 places</small></span></div>
+        <span class="dg-arrow" aria-hidden="true">→</span>
+        <div class="dg-step dg-edge"><span class="dg-num">2</span><span class="dg-text"><strong lang="zh-CN">打开公开页面</strong><strong lang="en">Opens the public pages</strong><small lang="zh-CN">入口、文档、风景照片、登录按钮</small><small lang="en">entrance, docs, scenery photos, the sign-in button</small></span></div>
+        <span class="dg-arrow" aria-hidden="true">→</span>
+        <div class="dg-step dg-edge"><span class="dg-num">3</span><span class="dg-text"><strong lang="zh-CN">敲一敲私人的门</strong><strong lang="en">Knocks on the private door</strong><small lang="zh-CN">私人回忆必须拒绝访客</small><small lang="en">private memories must turn a guest away</small></span></div>
+        <span class="dg-arrow" aria-hidden="true">→</span>
+        <div class="dg-step dg-private"><span class="dg-num">4</span><span class="dg-text"><strong lang="zh-CN">网站自查</strong><strong lang="en">The site checks itself</strong><small lang="zh-CN">通过 /health：回忆数据库、私人媒体存储、登录设置各看一眼</small><small lang="en">through /health: one look each at the memory database, private media storage and sign-in settings</small></span></div>
+      </div>
+      <h3><span lang="zh-CN">结果</span><span lang="en">Results</span></h3>
+      <div class="dg-flow">
+        <div class="dg-step dg-good"><span class="dg-text"><strong lang="zh-CN">正常</strong><strong lang="en">Working</strong><small lang="zh-CN">一切如预期</small><small lang="en">everything as expected</small></span></div>
+        <div class="dg-step dg-warn"><span class="dg-text"><strong lang="zh-CN">变慢</strong><strong lang="en">Slow</strong><small lang="zh-CN">能用，但比平时慢；或者失败过一次</small><small lang="en">working but slower than usual, or failed once</small></span></div>
+        <div class="dg-step dg-bad"><span class="dg-text"><strong lang="zh-CN">故障</strong><strong lang="en">Not working</strong><small lang="zh-CN">连续两轮都失败</small><small lang="en">failed two runs in a row</small></span></div>
+      </div>
+
+      <h2><span lang="zh-CN">每项功能</span><span lang="en">Each function</span></h2>
+      <div class="table-wrap"><table>
+          <thead><tr><th><span lang="zh-CN">功能</span><span lang="en">Function</span></th><th><span lang="zh-CN">给访客做什么</span><span lang="en">What it does</span></th><th><span lang="zh-CN">怎么测试</span><span lang="en">How it's tested</span></th><th><span lang="zh-CN">测试的位置</span><span lang="en">Where it's tested</span></th><th><span lang="zh-CN">正常时</span><span lang="en">When working</span></th><th><span lang="zh-CN">坏了时访客会发现</span><span lang="en">If it broke, a visitor would notice</span></th></tr></thead>
+          <tbody>
+            <tr data-function="pages"><td><strong lang="zh-CN">页面</strong><strong lang="en">Pages</strong></td><td><span lang="zh-CN">打开入口和这些文档页</span><span lang="en">Opens the entrance and these docs</span></td><td><span lang="zh-CN">打开入口和文档页，看到网站的页眉和标签页</span><span lang="en">Opens the entrance and the docs and looks for the site header and tabs</span></td><td><span lang="zh-CN">首页和 /docs</span><span lang="en">the home page and /docs</span></td><td><span class="dg-good">✓</span> <span lang="zh-CN">正常</span><span lang="en">Working</span></td><td><span class="dg-bad">✗</span> <span lang="zh-CN">网站完全打不开</span><span lang="en">The site doesn't open at all</span></td></tr>
+            <tr data-function="scenery"><td><strong lang="zh-CN">公开风景照片</strong><strong lang="en">Public scenery photos</strong></td><td><span lang="zh-CN">入口上的两张风景照片</span><span lang="en">The two scenery photos on the entrance</span></td><td><span lang="zh-CN">确认两张照片和照片列表都在</span><span lang="en">Checks both photos and the photo list are there</span></td><td><span lang="zh-CN">两张风景照片和 /api/public</span><span lang="en">the two scenery photos and /api/public</span></td><td><span class="dg-good">✓</span> <span lang="zh-CN">正常</span><span lang="en">Working</span></td><td><span class="dg-bad">✗</span> <span lang="zh-CN">入口还能打开，只是没有照片</span><span lang="en">The entrance opens, without its photos</span></td></tr>
+            <tr data-function="signin"><td><strong lang="zh-CN">Microsoft 登录</strong><strong lang="en">Microsoft sign-in</strong></td><td><span lang="zh-CN">“登录”把我们带到 Microsoft</span><span lang="en">"Sign in" takes us to Microsoft</span></td><td><span lang="zh-CN">点“登录”看是否跳到 Microsoft；网站再确认自己能读到登录设置</span><span lang="en">Follows "Sign in" to see it leads to Microsoft; the site also confirms it can read its sign-in settings</span></td><td><span lang="zh-CN">“登录”链接 /auth/login、/api/me 和 /health</span><span lang="en">the "Sign in" link /auth/login, /api/me and /health</span></td><td><span class="dg-good">✓</span> <span lang="zh-CN">正常</span><span lang="en">Working</span></td><td><span class="dg-bad">✗</span> <span lang="zh-CN">我们登录不了</span><span lang="en">We can't sign in</span></td></tr>
+            <tr data-function="private"><td><strong lang="zh-CN">隐私门</strong><strong lang="en">Privacy gate</strong></td><td><span lang="zh-CN">没登录的人看不到私人回忆</span><span lang="en">Nobody signed out can see private memories</span></td><td><span lang="zh-CN">以访客身份打开私人回忆，必须被拒绝</span><span lang="en">Asks for private memories as a guest; it must be refused</span></td><td><span lang="zh-CN">私人回忆 /api/story</span><span lang="en">private memories at /api/story</span></td><td><span class="dg-good">✓</span> <span lang="zh-CN">正常</span><span lang="en">Working</span></td><td><span class="dg-bad">✗</span> <span lang="zh-CN">要么网站坏了，要么私人内容可能对外打开了</span><span lang="en">Either the site is broken, or private content may be open</span></td></tr>
+            <tr data-function="memories"><td><strong lang="zh-CN">回忆存储</strong><strong lang="en">Memory storage</strong></td><td><span lang="zh-CN">保存回忆文字、补写和心愿</span><span lang="en">Keeps memory text, notes and wishes</span></td><td><span lang="zh-CN">网站自己读一次数据库，不读任何回忆内容</span><span lang="en">The site reads its database once, without reading any memory</span></td><td><span lang="zh-CN">/health</span><span lang="en">/health</span></td><td><span class="dg-good">✓</span> <span lang="zh-CN">正常</span><span lang="en">Working</span></td><td><span class="dg-bad">✗</span> <span lang="zh-CN">回忆打不开，也保存不了</span><span lang="en">Memories won't open or save</span></td></tr>
+            <tr data-function="media"><td><strong lang="zh-CN">私人媒体存储</strong><strong lang="en">Private media storage</strong></td><td><span lang="zh-CN">保存原始照片、视频和礼物页面</span><span lang="en">Keeps original photos, videos and gift pages</span></td><td><span lang="zh-CN">网站自己确认私人存储能回应，不下载任何文件</span><span lang="en">The site confirms its private storage answers, without downloading anything</span></td><td><span lang="zh-CN">/health</span><span lang="en">/health</span></td><td><span class="dg-good">✓</span> <span lang="zh-CN">正常</span><span lang="en">Working</span></td><td><span class="dg-bad">✗</span> <span lang="zh-CN">照片和视频打不开</span><span lang="en">Photos and videos won't open</span></td></tr>
+          </tbody>
+      </table></div>
+
+      <h2><span lang="zh-CN">每项功能有几个检查</span><span lang="en">Checks per function</span></h2>
+      <div class="health-chart" role="img" aria-label="Checks per function">
+        <div class="health-chart-row"><span class="health-chart-label"><span lang="zh-CN">页面</span><span lang="en">Pages</span></span><span class="health-chart-bar" data-checks="2"></span><span class="health-chart-value">2</span></div>
+        <div class="health-chart-row"><span class="health-chart-label"><span lang="zh-CN">公开风景照片</span><span lang="en">Public scenery photos</span></span><span class="health-chart-bar" data-checks="3"></span><span class="health-chart-value">3</span></div>
+        <div class="health-chart-row"><span class="health-chart-label"><span lang="zh-CN">Microsoft 登录</span><span lang="en">Microsoft sign-in</span></span><span class="health-chart-bar" data-checks="3"></span><span class="health-chart-value">3</span></div>
+        <div class="health-chart-row"><span class="health-chart-label"><span lang="zh-CN">隐私门</span><span lang="en">Privacy gate</span></span><span class="health-chart-bar" data-checks="1"></span><span class="health-chart-value">1</span></div>
+        <div class="health-chart-row"><span class="health-chart-label"><span lang="zh-CN">回忆存储</span><span lang="en">Memory storage</span></span><span class="health-chart-bar" data-checks="1"></span><span class="health-chart-value">1</span></div>
+        <div class="health-chart-row"><span class="health-chart-label"><span lang="zh-CN">私人媒体存储</span><span lang="en">Private media storage</span></span><span class="health-chart-bar" data-checks="1"></span><span class="health-chart-value">1</span></div>
+      </div>
 
       <h2><span lang="zh-CN">测不到的部分</span><span lang="en">What a guest can't test</span></h2>
-      <p lang="zh-CN">需要我们登录的事情访客都测不到：在 Microsoft 登录、打开回忆册、相簿和旧网页、看照片和视频、保存文字、上传照片和视频。</p>
-      <p lang="en">Anything that needs our sign-in: signing in at Microsoft, opening the memory book, album and old website, viewing photos and videos, saving text, and uploading photos and videos.</p>
-
-      <h2><span lang="zh-CN">技术细节</span><span lang="en">Technical details</span></h2>
-      <details class="dg-more"><summary>Guest checks: URLs, methods, status codes, content types and markers</summary><div>
-        <p>GET or HEAD only; no cookies, no <code>Authorization</code> header, no query string; redirects not followed; user agent <code>dliu-status-bot/1.0 (+https://status.dliu.com/docs)</code>; timeout 10 s.</p>
-        <div class="table-wrap"><table>
-          <thead><tr><th>Function</th><th>Method</th><th>URL</th><th>Status</th><th>Content type</th><th>Body marker, JSON key or <code>Location</code> prefix</th><th>Slow after</th></tr></thead>
-          <tbody>
-            <tr><td><code>pages</code></td><td>GET</td><td>https://jh.dliu.com/</td><td>200</td><td><code>text/html</code></td><td>contains <code>class="dl-header"</code></td><td>2000 ms</td></tr>
-            <tr><td><code>pages</code></td><td>GET</td><td>https://jh.dliu.com/docs</td><td>200</td><td><code>text/html</code></td><td>contains <code>class="dl-tabs"</code></td><td>2000 ms</td></tr>
-            <tr><td><code>scenery</code></td><td>GET</td><td>https://jh.dliu.com/api/public</td><td>200</td><td><code>application/json</code></td><td>JSON key <code>photos</code></td><td>2000 ms</td></tr>
-            <tr><td><code>scenery</code></td><td>HEAD</td><td>https://jh.dliu.com/api/guest/guestSea</td><td>200</td><td><code>image/jpeg</code></td><td>—</td><td>2000 ms</td></tr>
-            <tr><td><code>scenery</code></td><td>HEAD</td><td>https://jh.dliu.com/api/guest/guestHarbour</td><td>200</td><td><code>image/jpeg</code></td><td>—</td><td>2000 ms</td></tr>
-            <tr><td><code>signin</code></td><td>GET</td><td>https://jh.dliu.com/auth/login</td><td>302</td><td>—</td><td><code>Location</code> starts with <code>https://login.microsoftonline.com/</code></td><td>3000 ms</td></tr>
-            <tr><td><code>signin</code></td><td>GET</td><td>https://jh.dliu.com/api/me</td><td>200</td><td><code>application/json</code></td><td>contains <code>"signedIn":false</code></td><td>3000 ms</td></tr>
-            <tr><td><code>private</code></td><td>GET</td><td>https://jh.dliu.com/api/story</td><td>401</td><td><code>application/json</code></td><td>JSON key <code>error</code></td><td>3000 ms</td></tr>
-          </tbody>
-        </table></div>
-      </div></details>
-      <details class="dg-more"><summary>/health: format, caching and what each check reads</summary><div>
-        <p><code>GET https://jh.dliu.com/health</code> (HEAD also works). No cookies, <code>Authorization</code> header or query string reach the Lambda, which answers before reading any request data. Cached 60 s at CloudFront (<code>Cache-Control: public, max-age=60</code>). <code>Content-Type: application/health+json</code>; HTTP 200 for <code>pass</code> or <code>warn</code>, 503 for <code>fail</code>. Each check has a 4 s timeout and is <code>warn</code>/<code>slow</code> after 2.5 s. <code>output</code> is only <code>slow</code>, <code>timeout</code> or <code>read failed</code>.</p>
-        <pre class="code">{
-  "status": "pass",
-  "time": "2026-11-03T23:00:00Z",
-  "functions": [
-    { "key": "memories", "name": "Memory storage", "status": "pass" },
-    { "key": "media", "name": "Private media storage", "status": "pass" },
-    { "key": "signin", "name": "Microsoft sign-in settings", "status": "pass" }
-  ]
-}</pre>
-        <div class="table-wrap"><table>
-          <thead><tr><th>Function key</th><th>What the check reads</th></tr></thead>
-          <tbody>
-            <tr><td><code>memories</code></td><td>One DynamoDB <code>GetItem</code> of a fixed key that holds no record.</td></tr>
-            <tr><td><code>media</code></td><td>One S3 <code>HeadObject</code> of a fixed, known object in the private bucket (no LIST, no download).</td></tr>
-            <tr><td><code>signin</code></td><td>The sign-in settings the app already loads from SSM Parameter Store (cached 5 minutes). Microsoft is not called.</td></tr>
-          </tbody>
-        </table></div>
-      </div></details>
-      <p><a href="/docs/health.md">Full technical version (Markdown)</a></p>
+      <ul lang="zh-CN">
+        <li>在 Microsoft 登录，拿到我们的会话</li>
+        <li>打开回忆册、相簿和旧网页</li>
+        <li>看照片和视频</li>
+        <li>保存文字、上传照片和视频</li>
+      </ul>
+      <ul lang="en">
+        <li>Signing in at Microsoft and getting our session</li>
+        <li>Opening the memory book, the album and the old website</li>
+        <li>Viewing photos and videos</li>
+        <li>Saving text and uploading photos and videos</li>
+      </ul>
+      <p><a href="/docs/health.md"><span lang="zh-CN">给机器读的技术版（Markdown）</span><span lang="en">Technical version for machines (Markdown)</span></a></p>
     </article>
   </main>
   <footer class="dl-footer"><a class="dl-footer-logo" href="https://dliu.com" aria-label="dliu.com"><img src="https://files.dliu.com/dliu.com/favicon.png" alt="" width="24" height="24"></a><a href="https://dliu.com">dliu.com</a> · <a href="/docs" id="footer-docs">文档</a></footer>
