@@ -70,9 +70,11 @@ test('the guest checks and the /health details on the page match the Markdown fi
   assert.ok(guest.some(r=>r[2]==='https://jh.dliu.com/api/story'&&r[3]==='401'));
 });
 
-test('/docs/health has a diagram, plain lines, and every technical detail folded',()=>{
-  assert.match(page,/data-path="\/docs\/health"/);
-  assert.match(html,/<a href="\/docs\/health"><span lang="zh-CN">测试<\/span><span lang="en">Health checks<\/span><\/a>/);
+test('the Testing tab (/docs#health) has a diagram, plain lines, and every technical detail folded',()=>{
+  assert.match(page,/data-path="\/docs#health"/);
+  assert.match(html,/<a href="\/docs#health"><span lang="zh-CN">测试<\/span><span lang="en">Testing<\/span><\/a>/);
+  assert.doesNotMatch(html,/href="\/docs\/health"/);
+  assert.match(read('web/app.js'),/location\.hash==='#health'\?'\/docs#health'/);
   assert.match(page,/class="dg-flow"/);assert.ok((page.match(/class="dg-step/g)||[]).length>=4);assert.match(page,/class="dg-arrow"/);
   for(const result of ['dg-good','dg-warn','dg-bad'])assert.match(page,new RegExp(`class="dg-step ${result}"`),result);
   const details=[...page.matchAll(/<details\b[^>]*>/g)].map(m=>m[0]);
@@ -84,10 +86,10 @@ test('/docs/health has a diagram, plain lines, and every technical detail folded
   assert.match(page,/lang="zh-CN">测不到的部分/);assert.match(section(md,'## Not tested'),/upload/);
 });
 
-test('/docs/health and /health are routed; health.md is deployed as Markdown',()=>{
+test('/docs/health moves to /docs#health, /health is routed, and health.md is deployed as Markdown',()=>{
   const c={};vm.runInNewContext(read('lib/routes.cjs'),c);
   const route=uri=>c.handler({request:{uri,querystring:{},headers:{host:{value:'jh.dliu.com'}}}});
-  assert.equal(route('/docs/health').uri,'/docs.html');assert.equal(route('/docs/health.md').uri,'/docs/health.md');assert.equal(route('/health').uri,'/health');
+  for(const uri of ['/docs/health','/docs/health/']){const r=route(uri);assert.equal(r.statusCode,301,uri);assert.equal(r.headers.location.value,'/docs#health',uri);}assert.equal(route('/docs/health.md').uri,'/docs/health.md');assert.equal(route('/health').uri,'/health');
   const stack=read('lib/hujia-stack.ts');
   assert.match(stack,/'health':healthBehavior/);
   assert.match(stack,/new deploy\.BucketDeployment\(this,'Markdown',\{[^}]*include:\['\*\.md'\][^}]*contentType:'text\/markdown; charset=utf-8'/);

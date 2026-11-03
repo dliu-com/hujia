@@ -5,7 +5,7 @@
 const CHECK_TIMEOUT_MS = 4000;
 const SLOW_MS = 2500;
 
-// Keys match /docs/health and /docs/health.md (test/health.test.js keeps the three in sync).
+// Keys match the /docs#health tab and /docs/health.md (test/health.test.js keeps the three in sync).
 const FUNCTIONS = Object.freeze([
   { key: 'memories', name: 'Memory storage' },
   { key: 'media', name: 'Private media storage' },
