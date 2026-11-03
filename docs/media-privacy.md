@@ -4,6 +4,8 @@ The public repository contains application code and shared DL branding icons. Pe
 
 Store personal media in a separate private S3 bucket with S3 Block Public Access enabled and bucket-owner-enforced ownership. The public static website bucket must not contain private memories. Microsoft sign-in grants access through the API, which returns short-lived signed media URLs. Private documents must never be included in guest previews.
 
+The only exceptions are the two reviewed scenery copies on the public entrance, `trips/preview/guestSea` and `trips/preview/guestHarbour`. CloudFront serves them with origin access control, and the private bucket policy allows CloudFront to read exactly those two keys. Adding another public photo needs a change to that policy, `lib/routes.cjs` and `test/stack.test.js`, so it cannot happen by accident.
+
 The original first-gift website is preserved locally under `.local/original-site/`, including its original portrait favicon. The publishable `src/` and `archive/first-gift/` copies use the shared DL icon from DL Travel Plan. The original portrait is a separate private memory asset. It was taken in 2020 before the couple met, and Hujia liked it; the precise photo date is unknown.
 
 ## Identity documents

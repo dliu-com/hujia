@@ -65,7 +65,7 @@ function createHandler(deps = {}) {
       if (noteMatch) {
         // The gift book and album edit the same memory, including its optimistic version.
         const noteMemories = {bonfire:'memory-bonfire',farm:'memory-farm',kaka:'memory-kaka',friends:'memory-new-home',london:'memory-london',christmas:'memory-christmas',joke:'memory-christmas-joke',birthday:'memory-stephanie-birthday'};
-        const memoryId = noteMemories[noteMatch[1]];
+        const memoryId = Object.hasOwn(noteMemories, noteMatch[1]) ? noteMemories[noteMatch[1]] : undefined;
         const memory = memoryId && await db().get(memoryId);
         if (memory && !memory.deleted) {
           const note = value => ({id:`note-${noteMatch[1]}`,kind:'note',version:value.version,text:value.perspective || ''});

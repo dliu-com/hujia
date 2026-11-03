@@ -19,7 +19,8 @@ The site uses the shared dliu.com look ([kit and spec](https://files.dliu.com/dl
 - Each page loads `https://files.dliu.com/dliu.com/ui/v1/dl.css` first. It uses the shared `dl-header`, `dl-nav`, `dl-button` and `dl-footer` markup and the shared `dl-language` switcher.
 - Top left, the app's logo (`web/icon.png`, also the favicon) and name form one `dl-brand` link home. jh's logo has always been the DL mark; the original portrait favicon stays out of the published code for privacy.
 - Every footer starts with the shared DL logo (`dl-footer-logo`), linking to dliu.com.
-- `/about` and `/security` use `dl-tabs` and `dl-docs.css`.
+- The header ends its links with a `文档`/`Docs` button, and every footer reads `dliu.com · 文档`.
+- `/docs` (`web/docs.html`) has three `dl-tabs` and loads `dl-docs.css`: Technical architecture (`/docs`), Cost (`/docs/cost`) and Security (`/docs/security`). The old `/about` and `/security` addresses 301-redirect there. There is no API tab: `/api/*` serves only this site's pages and needs our sign-in.
 - `web/style.css`, `library.css` and `edit-conflict.css` hold only app-specific rules: the home hero, the album layout and the edit-conflict dialog. They use the shared `--dl-*` variables.
 - The CSP allows only the kit's paths: `style-src https://files.dliu.com/dliu.com/ui/` and `img-src https://files.dliu.com/dliu.com/`.
 - `test/shared-ui.test.js` guards these rules.
@@ -73,12 +74,29 @@ The uploader checks private-bucket controls and asset checksums. The importer cr
 CloudFront uses every edge location (`PriceClass_All`) and serves HTTP/2 and HTTP/3.
 
 - **Application code** (`web/` JS and CSS): `public, max-age=300, s-maxage=86400, stale-while-revalidate=86400`. Browsers keep these files for 5 minutes, and the edge keeps them for 1 day.
-- **HTML shell** (`index.html`, also served for `/`, `/about` and `/security`): `no-cache`, so it is revalidated on every request.
+- **HTML shells** (`index.html` for `/`, `docs.html` for `/docs`, `/docs/cost` and `/docs/security`): `no-cache`, so they are revalidated on every request.
+- **The two public scenery photos** (`/api/guest/guestSea`, `/api/guest/guestHarbour`): CloudFront reads them from the private bucket with origin access control and keeps them for 1 day. The bucket policy lets CloudFront read only those two objects.
 - **API, sign-in, old website, private pages and media**: not cached (`CachingDisabled`, responses `no-store`). Media requests are redirected to short-lived presigned S3 URLs, so CloudFront never caches photos or videos.
 
 Clearing: each `npm run deploy` uploads `web/` and invalidates `/*`.
 
+The CloudFront viewer function (`lib/routes.cjs`, tested in `test/routes.test.js`) answers only on `jh.dliu.com`, maps the docs and guest addresses, and redirects the old ones.
+
 Automatic S3-event clearing (EventBridge → Lambda → CloudFront invalidation) is **not used here, by design**. Only the deployment writes to the public site bucket, and that deployment already clears the edge. Uploads and curated media go to the private bucket, which CloudFront doesn't cache. Leaving it out also saves the shared free allowance of 1,000 invalidation paths a month. Add automatic clearing only if something starts changing edge-cached files outside a deploy.
+
+## Security review
+
+The threat model, live penetration test results and code review are on [/docs/security](https://jh.dliu.com/docs/security). To rerun the checks:
+
+```sh
+npm test                                   # includes the IAM, bucket policy, routing and auth regression tests
+node scripts/pentest-live.mjs              # live, read-only, anonymous tests
+node scripts/pentest-live.mjs --aws --mint # + direct-origin and signed-in tests (owner's AWS access)
+npm audit --omit=dev && npm audit
+gitleaks git --log-opts="--all" --redact .
+```
+
+`--mint` reads the Microsoft secret from SSM to sign 5-minute test sessions in memory; it never prints them and none of its requests change stored data. Use `--html` to print the results as table rows for the docs page.
 
 ## Privacy and recovery
 

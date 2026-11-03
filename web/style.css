@@ -10,3 +10,5 @@
 .guest-scenes img{display:block;width:auto;max-width:100%;max-height:32dvh;margin:0 auto;object-fit:contain;border-radius:var(--dl-radius)}
 .guest-scenes figcaption{margin-top:8px;color:var(--dl-muted);font-size:13px}
 @media(max-width:700px){.home{display:block;padding-top:36px}.home h1{font-size:32px}.guest-scenes{margin-top:32px}.guest-scenes img{max-height:none}}
+/* Docs show the paragraphs in the chosen language; untagged tables serve both. */
+html[lang="zh-CN"] :is(.dl-docs,.dl-tabs) [lang="en"],html[lang="en"] :is(.dl-docs,.dl-tabs) [lang="zh-CN"],.dl-docs[hidden]{display:none}

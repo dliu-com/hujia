@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>文档 · 胡佳 · 德威</title>
+  <link rel="icon" type="image/png" href="/icon.png">
+  <link rel="stylesheet" href="https://files.dliu.com/dliu.com/ui/v1/dl.css">
+  <link rel="stylesheet" href="https://files.dliu.com/dliu.com/ui/v1/dl-docs.css">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body class="dl-page">
+  <header class="dl-header">
+    <a class="dl-brand" href="/"><img class="dl-logo" src="/icon.png" alt="" width="32" height="32">胡佳 · 德威</a>
+    <nav class="dl-nav" aria-label="网站">
+      <a class="dl-button" id="docs-link" href="/docs" aria-current="page">文档</a>
+      <span id="account" class="dl-account" hidden></span>
+      <a class="dl-button dl-signin" id="sign-in" href="/auth/login?returnTo=%2Fapi%2Fpreview">登录</a>
+      <a class="dl-button" id="sign-out" href="/auth/logout" hidden>退出</a>
+      <div class="dl-language">
+        <button type="button" class="dl-button dl-language-toggle" aria-controls="dl-languages" aria-expanded="false" aria-label="Language / 语言">文/A</button>
+        <div id="dl-languages" class="dl-languages" role="group" aria-label="Language / 语言">
+          <button type="button" data-language="zh" lang="zh-CN" aria-pressed="true">中文</button>
+          <button type="button" data-language="en" lang="en" aria-pressed="false">English</button>
+        </div>
+      </div>
+    </nav>
+  </header>
+  <main id="main" class="dl-main dl-docs-main">
+    <nav class="dl-tabs" aria-label="Docs sections">
+      <a href="/docs" aria-current="page"><span lang="zh-CN">技术架构</span><span lang="en">Technical architecture</span></a>
+      <a href="/docs/cost"><span lang="zh-CN">运行成本</span><span lang="en">Cost</span></a>
+      <a href="/docs/security"><span lang="zh-CN">安全</span><span lang="en">Security</span></a>
+    </nav>
+
+    <article class="dl-docs" id="architecture" data-path="/docs">
+      <h1><span lang="zh-CN">技术架构</span><span lang="en">Technical architecture</span></h1>
+      <p class="lead" lang="zh-CN">这是德威送给胡佳的一份礼物：把写过的卡片、做过的网页、一起住过的家和走过的地方，放在一个可以慢慢翻看的地方。访客只看到入口和两张精选风景照片；其余回忆都需要用 Microsoft 账号登录。</p>
+      <p class="lead" lang="en">A gift from Dewei to Hujia: a place to revisit the cards, the first website, the homes and the places we have shared. Visitors see only the entrance and two selected scenery photos; every other memory needs a Microsoft sign-in.</p>
+      <div class="dg-stats">
+        <div class="dg-stat"><span class="dg-text"><strong>0</strong><small lang="zh-CN">台服务器：没人访问时不运行任何东西</small><small lang="en">servers: nothing runs while nobody visits</small></span></div>
+        <div class="dg-stat"><span class="dg-text"><strong>1</strong><small lang="zh-CN">个 Lambda：登录、读取和保存</small><small lang="en">Lambda: sign-in, reads and saves</small></span></div>
+        <div class="dg-stat"><span class="dg-text"><strong>2</strong><small lang="zh-CN">张公开照片，其余全部私有</small><small lang="en">public photos; everything else is private</small></span></div>
+        <div class="dg-stat"><span class="dg-text"><strong>5 min</strong><small lang="zh-CN">私人媒体链接的有效期</small><small lang="en">lifetime of a private media link</small></span></div>
+      </div>
+
+      <h2><span lang="zh-CN">组成部分</span><span lang="en">Components</span></h2>
+      <div class="dg-tier"><div class="dg-tier-label"><strong lang="zh-CN">浏览器</strong><strong lang="en">Browser</strong></div><div class="dg-tier-nodes">
+        <div class="dg-node dg-untrusted"><span class="dg-text"><strong lang="zh-CN">访客</strong><strong lang="en">Visitor</strong><small lang="zh-CN">入口页和两张风景照片</small><small lang="en">entrance page and two scenery photos</small></span></div>
+        <div class="dg-node dg-untrusted"><span class="dg-text"><strong lang="zh-CN">我们两个人</strong><strong lang="en">The two of us</strong><small lang="zh-CN">Microsoft 登录后的回忆册、相簿和旧网页</small><small lang="en">memory book, album and old website after Microsoft sign-in</small></span></div>
+      </div></div>
+      <div class="dg-tier"><div class="dg-tier-label"><strong lang="zh-CN">边缘</strong><strong lang="en">Edge</strong></div><div class="dg-tier-nodes">
+        <div class="dg-node dg-edge"><span class="dg-text"><strong>CloudFront jh.dliu.com</strong><small lang="zh-CN">TLS 1.2+、HTTP/3、安全响应头；只接受 jh.dliu.com 这个域名</small><small lang="en">TLS 1.2+, HTTP/3, security headers; answers only on jh.dliu.com</small></span></div>
+      </div></div>
+      <div class="dg-tier"><div class="dg-tier-label"><strong lang="zh-CN">应用</strong><strong lang="en">App</strong></div><div class="dg-tier-nodes">
+        <div class="dg-node dg-app"><span class="dg-text"><strong>S3 site</strong><small lang="zh-CN">公开的网页代码（HTML、JS、CSS、图标），不含任何私人内容</small><small lang="en">public code (HTML, JS, CSS, icon), no private content</small></span></div>
+        <div class="dg-node dg-app"><span class="dg-text"><strong>Lambda API</strong><small lang="zh-CN">/api/*、/auth/*：检查登录、签发 5 分钟媒体链接、保存文字</small><small lang="en">/api/*, /auth/*: checks the session, issues 5-minute media links, saves text</small></span></div>
+        <div class="dg-node dg-app"><span class="dg-text"><strong>Microsoft Entra</strong><small lang="zh-CN">只允许被分配到这个应用的账号登录</small><small lang="en">only accounts assigned to this app can sign in</small></span></div>
+      </div></div>
+      <div class="dg-tier"><div class="dg-tier-label"><strong lang="zh-CN">私有数据</strong><strong lang="en">Private data</strong></div><div class="dg-tier-nodes">
+        <div class="dg-node dg-private"><span class="dg-text"><strong>S3 private media</strong><small lang="zh-CN">原始照片、视频、脱敏证件、礼物页面；禁止公开访问，开启版本保留</small><small lang="en">original photos, videos, redacted documents, gift pages; public access blocked, versioned</small></span></div>
+        <div class="dg-node dg-private"><span class="dg-text"><strong>DynamoDB</strong><small lang="zh-CN">回忆文字、补写、心愿；时间点恢复，防删除保护</small><small lang="en">memory text, notes, wishes; point-in-time recovery, deletion protection</small></span></div>
+        <div class="dg-node dg-private"><span class="dg-text"><strong>SSM Parameter Store</strong><small lang="zh-CN">Microsoft 应用密钥（加密保存）</small><small lang="en">the Microsoft app secret (encrypted)</small></span></div>
+      </div></div>
+
+      <h2><span lang="zh-CN">打开一段回忆时发生了什么</span><span lang="en">What happens when you open a memory</span></h2>
+      <div class="dg-flow">
+        <div class="dg-step"><span class="dg-num">1</span><span class="dg-text"><strong lang="zh-CN">登录</strong><strong lang="en">Sign in</strong><small lang="zh-CN">/auth/login 跳转到 Microsoft（PKCE、state、nonce）</small><small lang="en">/auth/login sends you to Microsoft (PKCE, state, nonce)</small></span></div>
+        <span class="dg-arrow" aria-hidden="true">→</span>
+        <div class="dg-step"><span class="dg-num">2</span><span class="dg-text"><strong lang="zh-CN">验证</strong><strong lang="en">Verify</strong><small lang="zh-CN">Lambda 用密钥换取 id_token，检查签名、租户、受众和 nonce</small><small lang="en">Lambda exchanges the code with the secret and checks the id_token signature, tenant, audience and nonce</small></span></div>
+        <span class="dg-arrow" aria-hidden="true">→</span>
+        <div class="dg-step"><span class="dg-num">3</span><span class="dg-text"><strong lang="zh-CN">会话</strong><strong lang="en">Session</strong><small lang="zh-CN">签名的 __Host- Cookie（HttpOnly、Secure、SameSite=Lax，30 天）</small><small lang="en">signed __Host- cookie (HttpOnly, Secure, SameSite=Lax, 30 days)</small></span></div>
+        <span class="dg-arrow" aria-hidden="true">→</span>
+        <div class="dg-step"><span class="dg-num">4</span><span class="dg-text"><strong lang="zh-CN">媒体</strong><strong lang="en">Media</strong><small lang="zh-CN">每张照片都是一个 5 分钟后失效的 S3 签名链接，从不缓存</small><small lang="en">each photo is a presigned S3 link that expires after 5 minutes and is never cached</small></span></div>
+      </div>
+
+      <h2><span lang="zh-CN">保存和上传</span><span lang="en">Saving and uploading</span></h2>
+      <ul lang="zh-CN">
+        <li>每次保存都带上版本号；DynamoDB 只在版本没变时写入，所以两台设备同时编辑也不会互相覆盖。没保存成功的文字留在浏览器里。</li>
+        <li>上传时 Lambda 先记下文件大小和类型，再给浏览器一个 15 分钟有效、只能上传这个大小和类型的签名链接。文件先进入 <code>pending/</code>，检查通过后才复制到回忆里；没完成的上传一天后自动清理。照片和视频保留原件，不压缩、不转码。</li>
+        <li>回忆册、相簿和旧网页这些私人页面由 Lambda 在登录后返回，内容存放在私有存储桶里，不在公开代码里。</li>
+      </ul>
+      <ul lang="en">
+        <li>Every save carries a version number; DynamoDB writes only if the version is unchanged, so two devices editing at once never overwrite each other. Unsaved text stays in the browser.</li>
+        <li>For an upload the Lambda first records the file's size and type, then gives the browser a 15-minute link that can upload only that size and type. Files land in <code>pending/</code> and are copied into the memory only after the check; unfinished uploads are removed after a day. Photos and videos are kept as originals, never resized or re-encoded.</li>
+        <li>The private pages (memory book, album, old website) are returned by the Lambda after sign-in. Their content lives in the private bucket, not in the public code.</li>
+      </ul>
+
+      <h2><span lang="zh-CN">缓存</span><span lang="en">Caching</span></h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>What</th><th>Browser</th><th>CloudFront edge</th></tr></thead>
+        <tbody>
+          <tr><td>HTML (<code>/</code>, <code>/docs</code>)</td><td><code>no-cache</code> (revalidated every time)</td><td>revalidated</td></tr>
+          <tr><td>JS, CSS, icon</td><td>5 minutes</td><td>1 day; cleared on every deploy</td></tr>
+          <tr><td>The two public scenery photos (<code>/api/guest/*</code>)</td><td>1 day</td><td>1 day</td></tr>
+          <tr><td>API, sign-in, private pages, private media</td><td><code>no-store</code></td><td>never cached</td></tr>
+        </tbody>
+      </table></div>
+
+      <h2>API</h2>
+      <p lang="zh-CN">没有 API 标签页：<code>/api/*</code> 只供这个网站自己的页面使用，每个请求都需要我们两人之一的登录会话，不是给其他应用调用的接口。</p>
+      <p lang="en">There is no API tab: <code>/api/*</code> serves only this site's own pages, every call needs one of our two sign-in sessions, and it is not an interface for other apps.</p>
+      <p class="source"><a href="https://github.com/dliu-com/hujia">github.com/dliu-com/hujia</a></p>
+    </article>
+
+    <article class="dl-docs" id="cost" data-path="/docs/cost">
+      <h1><span lang="zh-CN">运行成本</span><span lang="en">Cost</span></h1>
+      <p class="lead" lang="zh-CN">平时每月不到 0.10 美元：没有服务器，按使用量计费，大部分在 AWS 免费额度内。</p>
+      <p class="lead" lang="en">Normally under US$0.10 a month: no servers, pay-per-use, and most of it inside the AWS free allowances.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Service</th><th>What it does</th><th>Usual monthly cost</th></tr></thead>
+        <tbody>
+          <tr><td>S3 private media</td><td>about 0.6 GB of originals, versioned</td><td>≈ US$0.02 (US$0.023 per GB-month)</td></tr>
+          <tr><td>S3 site</td><td>a few hundred KB of code</td><td>&lt; US$0.01</td></tr>
+          <tr><td>CloudFront</td><td>every page, photo and API call</td><td>US$0 inside the always-free 1 TB and 10 million requests (shared by all dliu.com sites)</td></tr>
+          <tr><td>Lambda (512 MB, at most 10 at once)</td><td>sign-in, reads, saves</td><td>US$0 inside the free tier</td></tr>
+          <tr><td>DynamoDB on demand + point-in-time recovery</td><td>a few dozen small records</td><td>&lt; US$0.01</td></tr>
+          <tr><td>SSM Parameter Store, ACM certificate</td><td>secret, TLS certificate</td><td>US$0</td></tr>
+          <tr><td>CloudWatch Logs (30 days)</td><td>Lambda logs</td><td>&lt; US$0.01</td></tr>
+          <tr><td>Route 53</td><td>two alias records in the shared dliu.com zone</td><td>US$0 (alias queries are free)</td></tr>
+        </tbody>
+      </table></div>
+      <h2 id="denial-of-wallet"><span lang="zh-CN">最坏情况：有人故意刷流量</span><span lang="en">Worst case: someone runs up the bill</span></h2>
+      <p lang="zh-CN">下面是攻击者每小时最多能让账单增加多少，以及是什么限制了它。</p>
+      <p lang="en">How much an attacker could add to the bill per hour, and what caps it.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Path</th><th>Cap</th><th>Most per hour</th></tr></thead>
+        <tbody>
+          <tr><td>Lambda (anonymous <code>/api/me</code>, <code>/auth/*</code>)</td><td>Reserved concurrency 10 × 512 MB: at most 18,000 GB-s and about 7 million requests an hour</td><td>≈ US$0.30 compute + ≈ US$1.50 requests ≈ <strong>US$2</strong></td></tr>
+          <tr><td>SSM / KMS</td><td>settings are cached for 5 minutes in each of at most 10 Lambda instances</td><td>&lt; US$0.01</td></tr>
+          <tr><td>Public scenery photos</td><td>served from the CloudFront cache (no Lambda, no S3 request per view)</td><td>counted in the CloudFront line</td></tr>
+          <tr><td>CloudFront requests and data out</td><td><strong>No hard cap.</strong> Only the attacker's bandwidth limits it; AWS Shield Standard stops network-layer floods</td><td>US$0.010–0.022 per 10,000 HTTPS requests and US$0.085–0.12 per GB: a 1 Gbit/s download loop ≈ 450 GB ≈ <strong>US$38–54</strong>; 10,000 requests/s ≈ US$36–80</td></tr>
+          <tr><td>Uploads with a stolen session</td><td>2 GB per file, 24 files per memory; unfinished uploads expire after a day</td><td>≈ US$10 of storage a month for each hour of 1 Gbit/s uploads, until cleaned up</td></tr>
+        </tbody>
+      </table></div>
+      <p lang="zh-CN">Lambda 的并发上限把应用本身的费用封顶在每小时约 2 美元；CloudFront 的流量费用没有硬上限。目前没有专门针对 jh 的预算提醒，是否添加（以及是否用 WAF 限速）由我们决定，见安全页的“剩余风险”。</p>
+      <p lang="en">The Lambda concurrency limit caps the app itself at about US$2 an hour; CloudFront traffic has no hard cap. There is no jh-specific budget alert yet; adding one (and a WAF rate limit) is an owner's decision, listed under accepted risks on the Security tab.</p>
+    </article>
+
+    <article class="dl-docs" id="security" data-path="/docs/security">
+      <h1><span lang="zh-CN">安全与隐私</span><span lang="en">Security and privacy</span></h1>
+      <p class="lead" lang="zh-CN">访客只看到入口和两张审核过的风景照片。回忆页面、照片、视频和证件材料都需要先登录；可以登录的账号由 Microsoft 端管理。私人媒体存放在独立的私有 S3 存储桶，链接只在登录后签发，5 分钟后失效。</p>
+      <p class="lead" lang="en">Visitors see the entrance and two reviewed scenery photos. Memories, photos, videos and documents require sign-in, and eligible accounts are managed on the Microsoft side. Private media lives in a separate private S3 bucket; its links are issued only after sign-in and expire after 5 minutes.</p>
+
+      <h2><span lang="zh-CN">谁能看到什么</span><span lang="en">Who can see what</span></h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Who</th><th>Can see</th><th>Enforced by</th></tr></thead>
+        <tbody>
+          <tr><td>Anyone</td><td>The entrance, these docs, the public code, and the two scenery photos <code>guestSea</code> and <code>guestHarbour</code></td><td>The private bucket policy lets CloudFront read exactly those two objects; the viewer function returns 404 for any other <code>/api/guest/*</code> name</td></tr>
+          <tr><td>A Microsoft account not assigned to the app, or from another organisation</td><td>Nothing more</td><td>Microsoft Entra (single tenant, user assignment required), then the app's tenant, audience and email-domain checks</td></tr>
+          <tr><td>The two of us, signed in</td><td>Every memory, note, photo, video and document; both can edit</td><td>Signed session cookie checked on every <code>/api/*</code> request</td></tr>
+          <tr><td>AWS</td><td>Stored data, encrypted at rest (S3-managed keys; DynamoDB default encryption)</td><td>The account owner's IAM access; the Lambda role can read and add but cannot delete stored versions</td></tr>
+        </tbody>
+      </table></div>
+
+      <h2><span lang="zh-CN">证件脱敏</span><span lang="en">Document redaction</span></h2>
+      <p lang="zh-CN">临时驾照的证件号码、出生日期和其他敏感字段已从保存的图片中删除。姓名、照片、签发日期和地址按我们的选择保留。原始证件不会随网页发布。</p>
+      <p lang="en">The saved provisional-licence image has had its identifier, birth date and other sensitive fields permanently removed. Name, portrait, issue date and address are retained by choice. The original identity document is not published with the site.</p>
+
+      <h2><span lang="zh-CN">威胁模型</span><span lang="en">Threat model</span></h2>
+      <p lang="zh-CN">下面的表格以英文记录（2026 年 11 月复审）。</p>
+      <p lang="en">Reviewed November 2026.</p>
+      <h3>Assets</h3>
+      <ul>
+        <li><strong>Private media</strong>: original photos and videos, the redacted licence, the letter and the gift pages (S3 private bucket).</li>
+        <li><strong>Memory text</strong>: captions, notes and wishes (DynamoDB).</li>
+        <li><strong>The Microsoft app secret</strong> (SSM). It also derives the cookie-signing keys, so whoever holds it can mint sessions.</li>
+        <li><strong>Session cookies</strong> in our browsers.</li>
+        <li><strong>The AWS bill and account</strong>, shared with the other dliu.com sites.</li>
+        <li><strong>Site integrity</strong>: the public code bucket and CloudFront.</li>
+      </ul>
+      <h3>Actors</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Actor</th><th>Starting access</th><th>Main goal</th></tr></thead>
+        <tbody>
+          <tr><td>Anonymous visitor or scanner</td><td>Public URLs, the public GitHub repo</td><td>Read private media, find exposed files, run up the bill</td></tr>
+          <tr><td>Signed-in non-owner</td><td>A Microsoft account (personal, other tenant, or same tenant but unassigned)</td><td>Get a session</td></tr>
+          <tr><td>Owner (one of us)</td><td>Full app access</td><td>Accidental damage: overwrite the other's edit, delete a photo</td></tr>
+          <tr><td>Holder of a stolen session cookie</td><td>A member session until it expires (≤ 30 days)</td><td>Read and change memories, upload large files</td></tr>
+          <tr><td>Compromised dependency or CI</td><td>Build-time npm packages, GitHub Actions</td><td>Ship malicious code or steal credentials</td></tr>
+          <tr><td>Compromised Lambda</td><td>The API role</td><td>Read or destroy private media</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Trust boundaries and data flows</h3>
+      <ol>
+        <li><strong>Browser → CloudFront</strong> (internet, TLS 1.2+). Everything from the browser is untrusted.</li>
+        <li><strong>CloudFront → S3 site</strong> (origin access control; the bucket blocks all other access).</li>
+        <li><strong>CloudFront → private bucket</strong>, only for the two scenery objects (origin access control + key-scoped bucket policy).</li>
+        <li><strong>CloudFront → Lambda function URL</strong> (origin access control; the URL needs AWS IAM signatures, so it cannot be called directly).</li>
+        <li><strong>Browser ↔ Microsoft Entra ↔ Lambda</strong>: authorization code + PKCE; the Lambda redeems the code with the secret.</li>
+        <li><strong>Lambda → DynamoDB, S3, SSM</strong> (IAM role, least privilege).</li>
+        <li><strong>Browser → private bucket</strong> directly, with presigned links: GET for 5 minutes, PUT for 15 minutes (fixed size and type).</li>
+        <li><strong>Developer → AWS</strong> (named IAM user, root refused by the scripts) and <strong>→ GitHub</strong> (public repo, no secrets; CI has a read-only token and no AWS credentials).</li>
+      </ol>
+      <h3>STRIDE per component</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Component</th><th>Spoofing</th><th>Tampering</th><th>Repudiation</th><th>Information disclosure</th><th>Denial of service / wallet</th><th>Elevation of privilege</th></tr></thead>
+        <tbody>
+          <tr><td>CloudFront + viewer function</td><td>Answers only on jh.dliu.com (the *.cloudfront.net name redirects)</td><td>TLS 1.2+, HSTS 1 year; only deploys write the code bucket</td><td>Access logs without cookies</td><td>CSP, nosniff, DENY framing, no-referrer, noindex; API, sign-in and private media never cached</td><td>No rate limit (accepted, see below); Shield Standard</td><td>—</td></tr>
+          <tr><td>Sign-in (Entra OIDC)</td><td>Single tenant + user assignment; RS256 id_token checked for issuer, tenant, audience, expiry, nonce</td><td>PKCE S256; state in a signed 10-minute cookie; code redeemed server-side</td><td>Denied sign-ins are logged</td><td>Implicit grant off; returnTo limited to same-site paths</td><td>—</td><td>Separate keys and a type field for sign-in and session cookies</td></tr>
+          <tr><td>Session cookie</td><td>HMAC-SHA256, constant-time compare</td><td>Any change breaks the MAC</td><td><code>updatedBy</code> on every saved record</td><td><code>__Host-</code>, HttpOnly, Secure, SameSite=Lax</td><td>—</td><td>Role needs the allowed email domain as well as a valid MAC</td></tr>
+          <tr><td>Lambda API</td><td>Session checked before any private read</td><td>Writes need the site's Origin, JSON and the current version; field allowlists</td><td>CloudWatch Logs, 30 days</td><td>Generic error messages; IDs limited to <code>[A-Za-z0-9-]</code>; media only by manifest name</td><td>Reserved concurrency 10 caps cost; 96 KB body limit</td><td>Both members are editors by design; no admin-only data</td></tr>
+          <tr><td>Private media bucket</td><td>Presigned links bound to one key, one method and 5 or 15 minutes</td><td>Versioned; the Lambda cannot delete versions or touch retention settings</td><td>—</td><td>Block Public Access, owner-enforced objects, TLS only, SSE-S3; CloudFront can read only the two scenery keys</td><td>Unfinished uploads expire after a day</td><td>—</td></tr>
+          <tr><td>DynamoDB</td><td>—</td><td>Conditional writes; point-in-time recovery; deletion protection</td><td>—</td><td>Encrypted at rest; reachable only by the API role</td><td>On-demand; only signed-in calls write</td><td>Lambda role: GetItem, Query, PutItem only</td></tr>
+          <tr><td>Microsoft secret (SSM)</td><td>—</td><td>Changed only with <code>scripts/set-secrets.sh</code></td><td>CloudTrail</td><td>SecureString; never logged or printed</td><td>Cached 5 minutes</td><td>Rotating it also revokes every session</td></tr>
+          <tr><td>Supply chain</td><td>—</td><td>The Lambda bundle has no npm dependencies; CDK and TypeScript are build-time only</td><td>Public Git history</td><td>gitleaks finds no secrets in the full history; personal media is ignored by Git</td><td>—</td><td>CI token is read-only and has no AWS access</td></tr>
+        </tbody>
+      </table></div>
+
+      <h2><span lang="zh-CN">渗透测试</span><span lang="en">Live penetration tests</span></h2>
+      <p lang="zh-CN">以下测试直接针对线上网站运行，只读，不会修改任何保存的数据。任何人都可以重新运行匿名部分：<code>node scripts/pentest-live.mjs</code>；有 AWS 权限时加上 <code>--aws --mint</code> 测试源站绕过和登录后的权限。</p>
+      <p lang="en">These run against the live site and are read-only: no test changes stored data. Anyone can rerun the anonymous part with <code>node scripts/pentest-live.mjs</code>; with the owner's AWS access, <code>--aws --mint</code> adds the direct-origin tests and signed-in tests (short-lived sessions minted in memory, never printed).</p>
+      <div class="dg-callout">169 tests, 169 passed, on 3 November 2026 after the fixes below (Authn 30, Media 17, OAuth 19, Injection 12, CORS 2, Cache 7, Hidden files 17, Headers 5, TLS 4, Docs 5, Origin bypass 13, Authz 19, IDOR 7, Errors 1, CSRF 5, Input 2, Upload 4). In the first run, before the fixes, 25 of 168 failed. 13 were real: the public photos (JH-02, 2 tests), the CSP bucket name (JH-03), the *.cloudfront.net name (JH-04, 3), the callback echo (JH-05), the prototype key (JH-06) and /docs, which did not exist yet (5). The other 12 were test expectations, corrected afterwards: AWS or S3 answering 401/403 instead of the app's 404, the traffic cookie on sign-out, a TRACE request the test client could not send, and a missing settings record.</div>
+      <details class="dg-more"><summary>All 169 tests</summary><div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Area</th><th>Test</th><th>Expected</th><th>Actual</th><th>Result</th><th>Date</th></tr></thead>
+        <tbody>
+<tr><td>Authn</td><td>GET /api/story without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>GET /api/story?studio=1 without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>GET /api/preview without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>GET /api/old-website without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>GET /old-website without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>GET /api/library without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>GET /api/media/portrait without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>HEAD /api/media/portrait without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>GET /api/media/guestSea without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>GET /api/notes/bonfire without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>GET /api/memories/memory-bonfire without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>GET /api/memories/memory-bonfire/photos/x without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>PUT /api/notes/bonfire without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>PUT /api/settings without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>PUT /api/memories/memory-bonfire without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>PUT /api/memories/memory-bonfire/photos/x without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>PUT /api/wishes/wish-x without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>POST /api/memories without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>POST /api/initialize without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>POST /api/wishes without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>POST /api/memories/memory-bonfire/photos without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>DELETE /api/memories/memory-bonfire without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>DELETE /api/memories/memory-bonfire/photos/x without a session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>GET /api/story with a forged session (random token)</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>GET /api/story with a forged session (payload signed with a guessed key)</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>GET /api/story with a forged session (unsigned JWT (alg none))</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>GET /api/story with a forged session (empty signature)</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>GET /api/story with a forged session (the sign-in cookie from /auth/login)</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>GET /api/me without a session</td><td>200 signedIn:false</td><td>200 {&quot;signedIn&quot;:false,&quot;configured&quot;:true}</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authn</td><td>GET /api/library from a browser without a session</td><td>302 to /auth/login?returnTo=%2Fapi%2Flibrary</td><td>302 /auth/login?returnTo=%2Fapi%2Flibrary</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Media</td><td>/api/public lists only the two reviewed scenery photos</td><td>guestSea, guestHarbour</td><td>/api/guest/guestSea,/api/guest/guestHarbour</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Media</td><td>/api/guest/guestSea is served and cached by CloudFront, not the Lambda</td><td>200 image/jpeg, edge hit on repeat, no AWS credentials</td><td>200 image/jpeg Hit from cloudfront</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Media</td><td>/api/guest/guestHarbour is served and cached by CloudFront, not the Lambda</td><td>200 image/jpeg, edge hit on repeat, no AWS credentials</td><td>200 image/jpeg Hit from cloudfront</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Media</td><td>/api/guest/portrait (private asset or traversal)</td><td>4xx, no image</td><td>404 text/plain; charset=utf-8</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Media</td><td>/api/guest/provisional (private asset or traversal)</td><td>4xx, no image</td><td>404 text/plain; charset=utf-8</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Media</td><td>/api/guest/letter (private asset or traversal)</td><td>4xx, no image</td><td>404 text/plain; charset=utf-8</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Media</td><td>/api/guest/parisCouple (private asset or traversal)</td><td>4xx, no image</td><td>404 text/plain; charset=utf-8</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Media</td><td>/api/guest/manifest (private asset or traversal)</td><td>4xx, no image</td><td>404 text/plain; charset=utf-8</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Media</td><td>/api/guest/guestsea (private asset or traversal)</td><td>4xx, no image</td><td>404 text/plain; charset=utf-8</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Media</td><td>/api/guest/guestSea.jpg (private asset or traversal)</td><td>4xx, no image</td><td>404 text/plain; charset=utf-8</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Media</td><td>/api/guest/..%2FguestSea (private asset or traversal)</td><td>4xx, no image</td><td>404 text/plain; charset=utf-8</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Media</td><td>/api/guest/%2e%2e%2fpreview%2fmanifest.json (private asset or traversal)</td><td>4xx, no image</td><td>404 text/plain; charset=utf-8</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Media</td><td>/api/guest/guestSea%00 (private asset or traversal)</td><td>4xx, no image</td><td>400 text/html</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Media</td><td>/api/guest/guestSea/.. (private asset or traversal)</td><td>4xx, no image</td><td>404 text/plain; charset=utf-8</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Media</td><td>/api/guest/__proto__ (private asset or traversal)</td><td>4xx, no image</td><td>404 text/plain; charset=utf-8</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Media</td><td>/api/guest/constructor (private asset or traversal)</td><td>4xx, no image</td><td>404 text/plain; charset=utf-8</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Media</td><td>/api/public/photos/&lt;id&gt; (old public preview path)</td><td>404</td><td>404</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>/auth/login sends an authorization-code request with PKCE, state and nonce</td><td>code + S256 + 32-char state/nonce + exact redirect_uri</td><td>code, S256, state 32, nonce 32, redirect https://jh.dliu.com/auth/callback</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>sign-in cookie flags</td><td>__Host- prefix, Secure, HttpOnly, SameSite=Lax, Path=/, 10 min</td><td>__Host-hujia_auth=…; Path=/; Max-Age=600; Secure; HttpOnly; SameSite=Lax</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>PKCE verifier and nonce stay in a signed cookie, not in the URL</td><td>state in URL matches cookie; verifier not in URL</td><td>state match true, verifier in URL false</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>open redirect: returnTo=&quot;//evil.example&quot;</td><td>returnTo forced to /</td><td>&quot;/&quot;</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>open redirect: returnTo=&quot;/\\evil.example&quot;</td><td>returnTo forced to /</td><td>&quot;/&quot;</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>open redirect: returnTo=&quot;https://evil.example&quot;</td><td>returnTo forced to /</td><td>&quot;/&quot;</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>open redirect: returnTo=&quot;/\t/evil.example&quot;</td><td>returnTo forced to /</td><td>&quot;/&quot;</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>open redirect: returnTo=&quot;\\/\\/evil.example&quot;</td><td>returnTo forced to /</td><td>&quot;/&quot;</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>open redirect: returnTo=&quot;/\r\nSet-Cookie: injected=1&quot;</td><td>returnTo forced to /</td><td>&quot;/&quot;</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>open redirect: returnTo=&quot;javascript:alert(1)&quot;</td><td>returnTo forced to /</td><td>&quot;/&quot;</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>open redirect: returnTo=&quot;/%2F%2Fevil.example/..&quot;</td><td>returnTo forced to /</td><td>&quot;/%2F%2Fevil.example/..&quot;</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>returnTo keeps a same-site path</td><td>/api/library</td><td>/api/library</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>callback without the sign-in cookie (login CSRF)</td><td>400, no session cookie</td><td>400</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>callback with a mismatched state</td><td>400, no session cookie</td><td>400</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>callback with the right state and a forged code (first use)</td><td>401 from token exchange, no session cookie</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>callback with the right state and a forged code (replay)</td><td>401 from token exchange, no session cookie</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>callback error parameter is not reflected (content injection)</td><td>fixed message only</td><td>401 {&quot;error&quot;:&quot;Sign-in failed: unknown_error&quot;}</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>callback with a valid error code</td><td>code shown, no markup</td><td>401 {&quot;error&quot;:&quot;Sign-in failed: access_denied&quot;}</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>OAuth</td><td>logout clears both cookies</td><td>session and sign-in cookies Max-Age=0</td><td>__Host-hujia_session cleared, __Host-hujia_auth cleared</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Injection</td><td>GET /api/media/..%2F..%2Fpreview%2Fmanifest.json</td><td>4xx, no injected header, no stack trace</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Injection</td><td>GET /api/media/%2e%2e</td><td>4xx, no injected header, no stack trace</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Injection</td><td>GET /api/memories/x'%20OR%201=1</td><td>4xx, no injected header, no stack trace</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Injection</td><td>GET /api/memories/%7B%22%24ne%22%3A1%7D</td><td>4xx, no injected header, no stack trace</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Injection</td><td>GET /api/notes/bonfire%0d%0aSet-Cookie:%20x=1</td><td>4xx, no injected header, no stack trace</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Injection</td><td>GET /api/guest/guestSea%0d%0aX-Injected:%201</td><td>4xx, no injected header, no stack trace</td><td>404</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Injection</td><td>reflected XSS in a guest name</td><td>JSON or XML error, no echo</td><td>404 text/plain; charset=utf-8</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>CORS</td><td>GET /api/me with Origin: https://evil.example</td><td>no Access-Control-Allow-Origin</td><td>none</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>CORS</td><td>preflight OPTIONS /api/notes/bonfire from evil.example</td><td>no Access-Control-Allow-*</td><td>401 none</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Cache</td><td>/api/me twice (cache deception)</td><td>never an edge hit; no-store on API</td><td>200 Miss from cloudfront no-store</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Cache</td><td>/api/story twice (cache deception)</td><td>never an edge hit; no-store on API</td><td>401 Error from cloudfront no-store</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Cache</td><td>/api/story/x.css twice (cache deception)</td><td>never an edge hit; no-store on API</td><td>401 Error from cloudfront no-store</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Cache</td><td>/api/story;x.css twice (cache deception)</td><td>never an edge hit; no-store on API</td><td>401 Error from cloudfront no-store</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Cache</td><td>/api/library/style.css twice (cache deception)</td><td>never an edge hit; no-store on API</td><td>401 Error from cloudfront no-store</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Cache</td><td>/old-website/x.js twice (cache deception)</td><td>never an edge hit; no-store on API</td><td>403 Error from cloudfront </td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Cache</td><td>X-Forwarded-Host poisoning of the home page</td><td>evil host not echoed</td><td>200</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Hidden files</td><td>GET /.git/config</td><td>not served (403/404)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Hidden files</td><td>GET /.git/HEAD</td><td>not served (403/404)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Hidden files</td><td>GET /.env</td><td>not served (403/404)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Hidden files</td><td>GET /.local/book-content.json</td><td>not served (403/404)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Hidden files</td><td>GET /app.js.map</td><td>not served (403/404)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Hidden files</td><td>GET /package.json</td><td>not served (403/404)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Hidden files</td><td>GET /package-lock.json</td><td>not served (403/404)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Hidden files</td><td>GET /cdk.json</td><td>not served (403/404)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Hidden files</td><td>GET /cdk.out/manifest.json</td><td>not served (403/404)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Hidden files</td><td>GET /lambda/api/index.js</td><td>not served (403/404)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Hidden files</td><td>GET /README.md</td><td>not served (403/404)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Hidden files</td><td>GET /docs/media-privacy.md</td><td>not served (403/404)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Hidden files</td><td>GET /.DS_Store</td><td>not served (403/404)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Hidden files</td><td>GET /index.html~</td><td>not served (403/404)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Hidden files</td><td>GET /web/index.html</td><td>not served (403/404)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Hidden files</td><td>GET /preview/manifest.json</td><td>not served (403/404)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Hidden files</td><td>GET /trips/preview/portrait</td><td>not served (403/404)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Headers</td><td>security headers on /</td><td>CSP default-src 'self' + frame-ancestors 'none', HSTS 1 year, nosniff, DENY, no-referrer</td><td>all present</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Headers</td><td>security headers on /docs/security</td><td>CSP default-src 'self' + frame-ancestors 'none', HSTS 1 year, nosniff, DENY, no-referrer</td><td>all present</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Headers</td><td>security headers on /api/me</td><td>CSP default-src 'self' + frame-ancestors 'none', HSTS 1 year, nosniff, DENY, no-referrer</td><td>all present</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Headers</td><td>site CSP does not name the private media bucket</td><td>no s3 host in CSP</td><td>not listed</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Headers</td><td>TRACE /</td><td>refused</td><td>405</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>TLS</td><td>plain HTTP</td><td>301 to https</td><td>301 https://jh.dliu.com/</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>TLS</td><td>TLSv1 handshake</td><td>refused by the server</td><td>ERR_SSL_TLSV1_ALERT_PROTOCOL_VERSION</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>TLS</td><td>TLSv1.1 handshake</td><td>refused by the server</td><td>ERR_SSL_TLSV1_ALERT_PROTOCOL_VERSION</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>TLS</td><td>TLS 1.3 handshake</td><td>accepted</td><td>TLSv1.3</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Docs</td><td>GET /docs</td><td>200 HTML</td><td>200 text/html</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Docs</td><td>GET /docs/cost</td><td>200 HTML</td><td>200 text/html</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Docs</td><td>GET /docs/security</td><td>200 HTML</td><td>200 text/html</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Docs</td><td>GET /about</td><td>301 to /docs</td><td>301 /docs</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Docs</td><td>GET /security</td><td>301 to /docs/security</td><td>301 /docs/security</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Origin bypass</td><td>Lambda function URL directly: GET /api/me</td><td>403 (IAM auth; only CloudFront may call)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Origin bypass</td><td>Lambda function URL directly: PUT /api/notes/bonfire</td><td>403</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Origin bypass</td><td>site bucket directly: GET /index.html</td><td>403</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Origin bypass</td><td>private media bucket: list objects</td><td>403</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Origin bypass</td><td>private media bucket: unsigned GET preview/…</td><td>403</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Origin bypass</td><td>private media bucket: unsigned GET preview/…</td><td>403</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Origin bypass</td><td>private media bucket: unsigned GET trips/preview/…</td><td>403</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Origin bypass</td><td>private media bucket: unsigned GET trips/preview/…</td><td>403</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Origin bypass</td><td>private media bucket: plain HTTP</td><td>refused</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Origin bypass</td><td>private media bucket: anonymous PUT</td><td>403</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Origin bypass</td><td>*.cloudfront.net/</td><td>301 to https://jh.dliu.com/</td><td>301 https://jh.dliu.com/</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Origin bypass</td><td>*.cloudfront.net/api/me</td><td>301 to https://jh.dliu.com/api/me</td><td>301 https://jh.dliu.com/api/me</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Origin bypass</td><td>*.cloudfront.net/api/guest/guestSea</td><td>301 to https://jh.dliu.com/api/guest/guestSea</td><td>301 https://jh.dliu.com/api/guest/guestSea</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>GET /api/story with expired session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>GET /api/media/portrait with expired session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>GET /api/preview with expired session</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>GET /api/story with session for an account outside the allowed domain</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>GET /api/media/portrait with session for an account outside the allowed domain</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>GET /api/preview with session for an account outside the allowed domain</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>GET /api/story with session signed with the sign-in key</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>GET /api/media/portrait with session signed with the sign-in key</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>GET /api/preview with session signed with the sign-in key</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>GET /api/story with sign-in typed payload</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>GET /api/media/portrait with sign-in typed payload</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>GET /api/preview with sign-in typed payload</td><td>401</td><td>401</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>/api/me with a member session</td><td>200 signedIn</td><td>200</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>member media link</td><td>302 to a presigned S3 URL that expires in 300 s</td><td>302 expires=300</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>member media link works (least-privilege role can still sign reads)</td><td>206 first byte</td><td>206</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>presigned link re-pointed at another private object</td><td>403 (signature covers the key)</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>presigned link with its expiry lengthened</td><td>403</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>IDOR</td><td>GET /api/media/doesNotExist as a member</td><td>404</td><td>404</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>IDOR</td><td>GET /api/media/constructor as a member</td><td>404</td><td>404</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>IDOR</td><td>GET /api/media/__proto__ as a member</td><td>404</td><td>404</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>IDOR</td><td>GET /api/media/..%2Fpreview%2Fmanifest.json as a member</td><td>404</td><td>404</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>IDOR</td><td>GET /api/memories/settings?studio=1 as a member</td><td>404</td><td>404</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>IDOR</td><td>GET /api/memories/note-bonfire?studio=1 as a member</td><td>404</td><td>404</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>IDOR</td><td>GET /api/memories/memory-aegina/photos/not-a-photo?studio=1 as a member</td><td>404</td><td>404</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Errors</td><td>GET /api/notes/constructor as a member (prototype key)</td><td>not 500</td><td>200</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>CSRF</td><td>PUT with Origin: https://evil.example</td><td>403</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>CSRF</td><td>PUT with Origin: null</td><td>403</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>CSRF</td><td>PUT without Origin</td><td>403</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>CSRF</td><td>PUT as a simple form post (text/plain)</td><td>415</td><td>415</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>CSRF</td><td>POST /api/initialize cross-site</td><td>403</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Injection</td><td>NoSQL operator as version</td><td>400</td><td>400</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Injection</td><td>NoSQL operator as text</td><td>400</td><td>400</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Injection</td><td>prototype pollution body</td><td>400/409, no write</td><td>409</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Injection</td><td>invalid JSON</td><td>400</td><td>400</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Injection</td><td>JSON array body</td><td>400</td><td>400</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Input</td><td>body over 96 KB</td><td>413</td><td>413</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Input</td><td>stale version (no write)</td><td>409</td><td>409</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>settings with an unknown field (mass assignment)</td><td>400 (404 while no settings record exists)</td><td>404</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Authz</td><td>memory with a server-only field (deleted/createdBy)</td><td>403</td><td>403</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Upload</td><td>upload intent for text/html</td><td>400, no intent stored</td><td>400</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Upload</td><td>upload intent for image/svg+xml</td><td>400</td><td>400</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Upload</td><td>upload intent over the size limit (3 GB video)</td><td>400</td><td>400</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+<tr><td>Upload</td><td>attach a photo that was never uploaded</td><td>404/409, nothing attached</td><td>404</td><td class="status">Pass</td><td>2026-11-03</td></tr>
+        </tbody>
+      </table></div>
+      </div></details>
+      <p>Not run live: request floods (they would lock us out of our own site). The cost and concurrency limits are calculated on the Cost tab instead.</p>
+
+      <h2><span lang="zh-CN">代码审查</span><span lang="en">Code review</span></h2>
+      <p lang="zh-CN">2026 年 11 月逐一审查了每个处理函数、CDK 栈、AWS 上实际的资源配置和完整的 Git 历史。发现的问题和处理结果如下（表格为英文）。</p>
+      <p lang="en">November 2026: every handler, the CDK stack, the live AWS resource settings and the full Git history were reviewed. Findings and outcomes:</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Severity</th><th>Finding</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>JH-01</td><td>Medium</td><td>The API role could delete any object version (<code>s3:DeleteObject*</code>), list, set retention or legal holds on private media, and scan, batch-write, update or delete DynamoDB items. A compromised Lambda could have destroyed the versioned originals.</td><td class="status fixed">Fixed: GetObject (preview, trips, pending), PutObject (pending, trips), DeleteObject (pending only), ListBucket; DynamoDB GetItem, Query, PutItem</td></tr>
+          <tr><td>JH-02</td><td>Medium</td><td>The two public photos went through the Lambda and redirected to uncached 5-minute S3 links. Anonymous traffic shared the 10 Lambda slots with us, each view cost S3 data transfer, and the links carried the role's temporary key ID and session token.</td><td class="status fixed">Fixed: served by CloudFront from the private bucket (edge-cached); the bucket policy allows only those two keys</td></tr>
+          <tr><td>JH-03</td><td>Low</td><td>The site-wide CSP named the private bucket on every response.</td><td class="status fixed">Fixed: removed; signed-in pages send their own CSP</td></tr>
+          <tr><td>JH-04</td><td>Low</td><td>The site also answered on its *.cloudfront.net name.</td><td class="status fixed">Fixed: 301 to jh.dliu.com</td></tr>
+          <tr><td>JH-05</td><td>Low</td><td><code>/auth/callback</code> echoed the <code>error</code> parameter (content injection; not script-executable because the reply is JSON with nosniff and CSP).</td><td class="status fixed">Fixed: only an OAuth error code is shown</td></tr>
+          <tr><td>JH-06</td><td>Low</td><td><code>/api/notes/constructor</code> (a JavaScript prototype name) gave a 500 for signed-in users.</td><td class="status fixed">Fixed: own-property lookup</td></tr>
+          <tr><td>JH-07</td><td>Medium</td><td>No budget or alarm covers jh; CloudFront cost has no hard cap, so a deliberate flood would go unnoticed until the bill.</td><td class="status">Open: owner's decision (a budget alert; optionally a WAF rate limit, which costs about US$6 a month)</td></tr>
+          <tr><td>JH-08</td><td>Low</td><td>Sessions last 30 days and cannot be revoked one by one; removing an account in Microsoft takes effect when its session expires.</td><td class="status">Accepted: rotating the Microsoft secret revokes every session at once</td></tr>
+          <tr><td>JH-09</td><td>Low</td><td>Anonymous <code>/api/me</code> and <code>/auth/*</code> still call the Lambda; a flood could use all 10 slots and briefly lock us out.</td><td class="status">Accepted: limits the bill; a WAF rate limit would fix it (owner's decision, JH-07)</td></tr>
+          <tr><td>JH-10</td><td>Low</td><td>Sign-out is a GET, so another site can sign us out.</td><td class="status">Accepted: nuisance only</td></tr>
+          <tr><td>JH-11</td><td>Info</td><td>Unknown paths return S3's generic AccessDenied XML.</td><td class="status">Accepted: no details are revealed</td></tr>
+          <tr><td>JH-12</td><td>Info</td><td>Denied sign-ins log the account name for 30 days; CloudFront logs keep query strings, including one-time sign-in codes (useless without the PKCE verifier and secret).</td><td class="status">Accepted: needed to audit sign-in attempts</td></tr>
+          <tr><td>JH-13</td><td>Info</td><td><code>npm audit</code>: 2 moderate (minimatch inside aws-cdk-lib, build-time only, no fix released). Production dependencies shipped to Lambda: none.</td><td class="status">Accepted</td></tr>
+          <tr><td>JH-14</td><td>Info</td><td>Upload records carry <code>expiresAt</code> but the table has no TTL, so finished or abandoned upload records accumulate.</td><td class="status">Accepted: tiny; enabling TTL would delete old records (owner's decision)</td></tr>
+          <tr><td>JH-15</td><td>Info</td><td>DELETE requests with a body are rejected by AWS at the Lambda URL signature check; the site never sends them.</td><td class="status">Accepted: no security impact</td></tr>
+        </tbody>
+      </table></div>
+      <h3>What was checked</h3>
+      <ul>
+        <li><strong>Input validation</strong>: path IDs are limited to <code>[A-Za-z0-9-]</code> and 60–80 characters; dates, booleans, text lengths, upload types (no HTML, SVG or PDF uploads) and sizes are checked before any write; request bodies are JSON objects of at most 96 KB.</li>
+        <li><strong>Authorization on every path</strong>: only <code>/api/me</code>, <code>/api/public</code>, <code>/api/guest/*</code>, <code>/auth/*</code> and the public code work without a session. <code>test/api.test.js</code> checks that every private path refuses anonymous reads without touching storage.</li>
+        <li><strong>Error handling</strong>: unexpected errors return a fixed message; logs keep the path and the error message, never request bodies, tokens or secrets.</li>
+        <li><strong>Secrets</strong>: none in code, logs or Git history (<code>gitleaks git --log-opts=--all</code>: no leaks in 51 commits). Personal photos, documents and research are excluded from Git.</li>
+        <li><strong>AWS settings</strong>: both buckets block public access and require TLS; the private bucket is versioned with owner-enforced objects; the Lambda URL needs IAM signatures; log retention is 30 days; DynamoDB has point-in-time recovery and deletion protection.</li>
+        <li><strong>Tests</strong>: every fix above has a regression test (<code>test/routes.test.js</code>, <code>test/stack.test.js</code>, <code>test/api.test.js</code>).</li>
+      </ul>
+
+      <h2><span lang="zh-CN">剩余风险</span><span lang="en">Accepted residual risks</span></h2>
+      <ul lang="zh-CN">
+        <li>CloudFront 流量费用没有硬上限；目前没有针对 jh 的预算提醒（JH-07，待我们决定）。</li>
+        <li>匿名请求可以占满 Lambda 的 10 个并发，短时间内影响我们使用（JH-09）。</li>
+        <li>会话 30 天有效，不能单独撤销；轮换 Microsoft 密钥会让所有会话失效（JH-08）。</li>
+        <li>我们两人都能编辑全部内容，这是设计如此。</li>
+        <li>私人礼物页面使用内联脚本（<code>'unsafe-inline'</code>），因为它们是我们自己写的内容；从 API 读到的文字只会作为纯文本显示。</li>
+      </ul>
+      <ul lang="en">
+        <li>CloudFront traffic cost has no hard cap, and no jh budget alert exists yet (JH-07, owner's decision).</li>
+        <li>Anonymous requests can fill the Lambda's 10 slots and briefly lock us out (JH-09).</li>
+        <li>Sessions last 30 days and cannot be revoked individually; rotating the Microsoft secret ends them all (JH-08).</li>
+        <li>Both of us can edit everything, by design.</li>
+        <li>The private gift pages use inline scripts (<code>'unsafe-inline'</code>) because they are our own content; text read from the API is shown only as plain text.</li>
+      </ul>
+    </article>
+  </main>
+  <footer class="dl-footer"><a class="dl-footer-logo" href="https://dliu.com" aria-label="dliu.com"><img src="https://files.dliu.com/dliu.com/favicon.png" alt="" width="24" height="24"></a><a href="https://dliu.com">dliu.com</a> · <a href="/docs" id="footer-docs">文档</a></footer>
+</body>
+</html>

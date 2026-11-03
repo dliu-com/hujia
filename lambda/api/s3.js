@@ -13,7 +13,6 @@ const INLINE_TYPES = /^(image\/(png|jpe?g|gif|webp|avif|heic|heif)|application\/
 
 const uploadKey = (tripId, fileId) => `${UPLOAD_PREFIX}${tripId}/${fileId}`;
 const fileKey = (tripId, fileId) => `${FILE_PREFIX}${tripId}/${fileId}`;
-const tripPrefix = (tripId) => `${FILE_PREFIX}${tripId}/`;
 
 // RFC 3986 encoding, as SigV4 expects.
 const encode = (value) => encodeURIComponent(value).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
@@ -127,21 +126,6 @@ function createFiles({
 
     async finish(tripId, fileId) {
       await send(new (lib().DeleteObjectCommand)({ Bucket: bucket, Key: uploadKey(tripId, fileId) }));
-    },
-
-    async remove(tripId, fileId) {
-      await send(new (lib().DeleteObjectCommand)({ Bucket: bucket, Key: fileKey(tripId, fileId) }));
-    },
-
-    async removeTrip(tripId) {
-      const { DeleteObjectsCommand, ListObjectsV2Command } = lib();
-      let ContinuationToken;
-      do {
-        const page = await send(new ListObjectsV2Command({ Bucket: bucket, Prefix: tripPrefix(tripId), ContinuationToken }));
-        const objects = (page.Contents || []).map(({ Key }) => ({ Key }));
-        if (objects.length) await send(new DeleteObjectsCommand({ Bucket: bucket, Delete: { Objects: objects, Quiet: true } }));
-        ContinuationToken = page.IsTruncated ? page.NextContinuationToken : undefined;
-      } while (ContinuationToken);
     },
   };
 }
