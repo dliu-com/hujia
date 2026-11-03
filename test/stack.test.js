@@ -67,5 +67,5 @@ test('CloudFront routes guest photos to the private bucket before the API, cache
 test('the Lambda URL needs IAM signatures and the API logs expire',()=>{
   const [,url]=resources('AWS::Lambda::Url')[0];assert.equal(url.Properties.AuthType,'AWS_IAM');
   const [,fn]=resources('AWS::Lambda::Function').find(([id])=>id.startsWith('Api'));assert.equal(fn.Properties.ReservedConcurrentExecutions,10);
-  const [,logs]=resources('AWS::Logs::LogGroup').find(([id])=>id.startsWith('ApiLogs'));assert.equal(logs.Properties.RetentionInDays,30);
+  const [,logs]=resources('AWS::Logs::LogGroup').find(([id])=>id.startsWith('ApiLogs'));assert.equal(logs.Properties.RetentionInDays,90);
 });
