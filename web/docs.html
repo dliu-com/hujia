@@ -33,6 +33,7 @@
       <a href="/docs" aria-current="page"><span lang="zh-CN">技术架构</span><span lang="en">Technical architecture</span></a>
       <a href="/docs/cost"><span lang="zh-CN">运行成本</span><span lang="en">Cost</span></a>
       <a href="/docs/security"><span lang="zh-CN">安全</span><span lang="en">Security</span></a>
+      <a href="/docs/health"><span lang="zh-CN">测试</span><span lang="en">Health checks</span></a>
     </nav>
 
     <article class="dl-docs" id="architecture" data-path="/docs">
@@ -411,6 +412,7 @@
           <tr><td>JH-12</td><td>Info</td><td>Denied sign-ins log the account name for 90 days; CloudFront logs keep query strings, including one-time sign-in codes (useless without the PKCE verifier and secret).</td><td class="status">Accepted: needed to audit sign-in attempts</td></tr>
           <tr><td>JH-13</td><td>Info</td><td><code>npm audit</code>: 2 moderate (minimatch inside aws-cdk-lib, build-time only, no fix released). Production dependencies shipped to Lambda: none.</td><td class="status">Accepted</td></tr>
           <tr><td>JH-14</td><td>Info</td><td>Upload records carry <code>expiresAt</code> but the table has no TTL, so finished or abandoned upload records accumulate.</td><td class="status">Accepted: tiny; enabling TTL would delete old records (owner's decision)</td></tr>
+          <tr><td>JH-16</td><td>Info</td><td>After Microsoft sign-in, <code>isAllowed</code> accepts any <code>@dliu.com</code> account from the tenant; the app keeps no per-person allow-list. Who can sign in at all is decided by Microsoft Entra: single tenant, user assignment required.</td><td class="status">Accepted (owner's decision): Entra assignment is the gate</td></tr>
           <tr><td>JH-15</td><td>Info</td><td>DELETE requests with a body are rejected by AWS at the Lambda URL signature check; the site never sends them.</td><td class="status">Accepted: no security impact</td></tr>
         </tbody>
       </table></div>
@@ -429,6 +431,7 @@
         <li>CloudFront 流量费用没有硬上限；目前没有针对 jh 的预算提醒（JH-07，待我们决定）。</li>
         <li>匿名请求可以占满 Lambda 的 10 个并发，短时间内影响我们使用（JH-09）。</li>
         <li>会话 30 天有效，不能单独撤销；轮换 Microsoft 密钥会让所有会话失效（JH-08）。</li>
+        <li>登录由 Microsoft Entra 把关：应用只属于我们自己的组织，必须被分配才能登录。之后网站的 <code>isAllowed</code> 只检查是不是本组织的 <code>@dliu.com</code> 账号，网站里没有逐人的名单。谁能进来由 Entra 的分配决定（JH-16）。</li>
         <li>我们两人都能编辑全部内容，这是设计如此。</li>
         <li>私人礼物页面使用内联脚本（<code>'unsafe-inline'</code>），因为它们是我们自己写的内容；从 API 读到的文字只会作为纯文本显示。</li>
       </ul>
@@ -436,9 +439,82 @@
         <li>CloudFront traffic cost has no hard cap, and no jh budget alert exists yet (JH-07, owner's decision).</li>
         <li>Anonymous requests can fill the Lambda's 10 slots and briefly lock us out (JH-09).</li>
         <li>Sessions last 30 days and cannot be revoked individually; rotating the Microsoft secret ends them all (JH-08).</li>
+        <li>Microsoft Entra is the sign-in gate: the app is single-tenant with user assignment required. After that, <code>isAllowed</code> accepts any <code>@dliu.com</code> account from the tenant, with no per-person list in the app; Entra assignment decides who gets in (JH-16).</li>
         <li>Both of us can edit everything, by design.</li>
         <li>The private gift pages use inline scripts (<code>'unsafe-inline'</code>) because they are our own content; text read from the API is shown only as plain text.</li>
       </ul>
+    </article>
+    <article class="dl-docs" id="health" data-path="/docs/health">
+      <h1><span lang="zh-CN">网站怎么被测试</span><span lang="en">How the site is tested</span></h1>
+      <p class="lead" lang="zh-CN">status.dliu.com 每 15 分钟以访客身份检查一次这个网站：不登录，只读，不改变任何内容，也看不到任何私人回忆。</p>
+      <p class="lead" lang="en">Every 15 minutes status.dliu.com checks this site as a guest: it never signs in, only reads, changes nothing, and sees none of the private memories.</p>
+      <div class="dg-flow" aria-label="How the site is tested">
+        <div class="dg-step dg-untrusted"><span class="dg-num">1</span><span class="dg-text"><strong>status.dliu.com</strong><small lang="zh-CN">访客身份，每 15 分钟</small><small lang="en">as a guest, every 15 minutes</small></span></div>
+        <span class="dg-arrow" aria-hidden="true">→</span>
+        <div class="dg-step dg-edge"><span class="dg-num">2</span><span class="dg-text"><strong lang="zh-CN">公开页面和地址</strong><strong lang="en">Public pages and addresses</strong><small lang="zh-CN">入口、文档、两张风景照片、登录跳转；私人内容必须拒绝访客</small><small lang="en">entrance, docs, two scenery photos, the sign-in redirect; private content must refuse guests</small></span></div>
+        <span class="dg-arrow" aria-hidden="true">→</span>
+        <div class="dg-step dg-app"><span class="dg-num">3</span><span class="dg-text"><strong>/health</strong><small lang="zh-CN">网站自己检查后台，最多每分钟一次</small><small lang="en">the site checks its back end, at most once a minute</small></span></div>
+        <span class="dg-arrow" aria-hidden="true">→</span>
+        <div class="dg-step dg-private"><span class="dg-num">4</span><span class="dg-text"><strong lang="zh-CN">每个依赖读一次</strong><strong lang="en">One read per dependency</strong><small lang="zh-CN">回忆数据库、私人媒体存储、登录设置</small><small lang="en">memory database, private media storage, sign-in settings</small></span></div>
+      </div>
+      <div class="dg-flow" aria-label="Results">
+        <div class="dg-step dg-good"><span class="dg-text"><strong lang="zh-CN">正常</strong><strong lang="en">Pass</strong><small lang="zh-CN">一切如预期</small><small lang="en">everything as expected</small></span></div>
+        <div class="dg-step dg-warn"><span class="dg-text"><strong lang="zh-CN">变慢</strong><strong lang="en">Warn</strong><small lang="zh-CN">能用，但比平时慢</small><small lang="en">working, but slower than usual</small></span></div>
+        <div class="dg-step dg-bad"><span class="dg-text"><strong lang="zh-CN">故障</strong><strong lang="en">Fail</strong><small lang="zh-CN">连续两次失败才算故障</small><small lang="en">down after two failed runs in a row</small></span></div>
+      </div>
+
+      <h2><span lang="zh-CN">检查的功能</span><span lang="en">What is checked</span></h2>
+      <ul class="health-functions">
+        <li data-function="pages"><strong lang="zh-CN">页面</strong><strong lang="en">Pages</strong>: <span lang="zh-CN">入口和文档页能打开。如果失败：谁都打不开这个网站。</span><span lang="en">The entrance and these docs open. If down: nobody can open the site.</span></li>
+        <li data-function="scenery"><strong lang="zh-CN">公开风景照片</strong><strong lang="en">Public scenery photos</strong>: <span lang="zh-CN">入口上的两张风景照片能显示。如果失败：入口还能打开，只是没有照片。</span><span lang="en">The two scenery photos on the entrance load. If down: the entrance opens without its photos.</span></li>
+        <li data-function="signin"><strong lang="zh-CN">Microsoft 登录</strong><strong lang="en">Microsoft sign-in</strong>: <span lang="zh-CN">“登录”能把人带到 Microsoft，网站能读到登录设置。如果失败：我们登录不了。</span><span lang="en">"Sign in" takes you to Microsoft, and the site can read its sign-in settings. If down: we can't sign in.</span></li>
+        <li data-function="private"><strong lang="zh-CN">隐私门</strong><strong lang="en">Privacy gate</strong>: <span lang="zh-CN">没登录的人打开私人回忆会被拒绝。如果失败：要么网站出了问题，要么私人内容可能对外打开了。</span><span lang="en">Private memories refuse anyone who isn't signed in. If down: either the site is broken or private content may be open.</span></li>
+        <li data-function="memories"><strong lang="zh-CN">回忆存储</strong><strong lang="en">Memory storage</strong>: <span lang="zh-CN">保存回忆文字的数据库能回应。如果失败：回忆打不开，也保存不了。</span><span lang="en">The database holding memory text answers. If down: memories won't open or save.</span></li>
+        <li data-function="media"><strong lang="zh-CN">私人媒体存储</strong><strong lang="en">Private media storage</strong>: <span lang="zh-CN">存放原始照片和视频的私有存储能回应。如果失败：照片和视频打不开。</span><span lang="en">The private storage holding original photos and videos answers. If down: photos and videos won't open.</span></li>
+      </ul>
+
+      <h2><span lang="zh-CN">测不到的部分</span><span lang="en">What a guest can't test</span></h2>
+      <p lang="zh-CN">需要我们登录的事情访客都测不到：在 Microsoft 登录、打开回忆册、相簿和旧网页、看照片和视频、保存文字、上传照片和视频。</p>
+      <p lang="en">Anything that needs our sign-in: signing in at Microsoft, opening the memory book, album and old website, viewing photos and videos, saving text, and uploading photos and videos.</p>
+
+      <h2><span lang="zh-CN">技术细节</span><span lang="en">Technical details</span></h2>
+      <details class="dg-more"><summary>Guest checks: URLs, methods, status codes, content types and markers</summary><div>
+        <p>GET or HEAD only; no cookies, no <code>Authorization</code> header, no query string; redirects not followed; user agent <code>dliu-status-bot/1.0 (+https://status.dliu.com/docs)</code>; timeout 10 s.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Function</th><th>Method</th><th>URL</th><th>Status</th><th>Content type</th><th>Body marker, JSON key or <code>Location</code> prefix</th><th>Slow after</th></tr></thead>
+          <tbody>
+            <tr><td><code>pages</code></td><td>GET</td><td>https://jh.dliu.com/</td><td>200</td><td><code>text/html</code></td><td>contains <code>class="dl-header"</code></td><td>2000 ms</td></tr>
+            <tr><td><code>pages</code></td><td>GET</td><td>https://jh.dliu.com/docs</td><td>200</td><td><code>text/html</code></td><td>contains <code>class="dl-tabs"</code></td><td>2000 ms</td></tr>
+            <tr><td><code>scenery</code></td><td>GET</td><td>https://jh.dliu.com/api/public</td><td>200</td><td><code>application/json</code></td><td>JSON key <code>photos</code></td><td>2000 ms</td></tr>
+            <tr><td><code>scenery</code></td><td>HEAD</td><td>https://jh.dliu.com/api/guest/guestSea</td><td>200</td><td><code>image/jpeg</code></td><td>—</td><td>2000 ms</td></tr>
+            <tr><td><code>scenery</code></td><td>HEAD</td><td>https://jh.dliu.com/api/guest/guestHarbour</td><td>200</td><td><code>image/jpeg</code></td><td>—</td><td>2000 ms</td></tr>
+            <tr><td><code>signin</code></td><td>GET</td><td>https://jh.dliu.com/auth/login</td><td>302</td><td>—</td><td><code>Location</code> starts with <code>https://login.microsoftonline.com/</code></td><td>3000 ms</td></tr>
+            <tr><td><code>signin</code></td><td>GET</td><td>https://jh.dliu.com/api/me</td><td>200</td><td><code>application/json</code></td><td>contains <code>"signedIn":false</code></td><td>3000 ms</td></tr>
+            <tr><td><code>private</code></td><td>GET</td><td>https://jh.dliu.com/api/story</td><td>401</td><td><code>application/json</code></td><td>JSON key <code>error</code></td><td>3000 ms</td></tr>
+          </tbody>
+        </table></div>
+      </div></details>
+      <details class="dg-more"><summary>/health: format, caching and what each check reads</summary><div>
+        <p><code>GET https://jh.dliu.com/health</code> (HEAD also works). No cookies, <code>Authorization</code> header or query string reach the Lambda, which answers before reading any request data. Cached 60 s at CloudFront (<code>Cache-Control: public, max-age=60</code>). <code>Content-Type: application/health+json</code>; HTTP 200 for <code>pass</code> or <code>warn</code>, 503 for <code>fail</code>. Each check has a 4 s timeout and is <code>warn</code>/<code>slow</code> after 2.5 s. <code>output</code> is only <code>slow</code>, <code>timeout</code> or <code>read failed</code>.</p>
+        <pre class="code">{
+  "status": "pass",
+  "time": "2026-11-03T23:00:00Z",
+  "functions": [
+    { "key": "memories", "name": "Memory storage", "status": "pass" },
+    { "key": "media", "name": "Private media storage", "status": "pass" },
+    { "key": "signin", "name": "Microsoft sign-in settings", "status": "pass" }
+  ]
+}</pre>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Function key</th><th>What the check reads</th></tr></thead>
+          <tbody>
+            <tr><td><code>memories</code></td><td>One DynamoDB <code>GetItem</code> of a fixed key that holds no record.</td></tr>
+            <tr><td><code>media</code></td><td>One S3 <code>HeadObject</code> of a fixed, known object in the private bucket (no LIST, no download).</td></tr>
+            <tr><td><code>signin</code></td><td>The sign-in settings the app already loads from SSM Parameter Store (cached 5 minutes). Microsoft is not called.</td></tr>
+          </tbody>
+        </table></div>
+      </div></details>
+      <p><a href="/docs/health.md">Full technical version (Markdown)</a></p>
     </article>
   </main>
   <footer class="dl-footer"><a class="dl-footer-logo" href="https://dliu.com" aria-label="dliu.com"><img src="https://files.dliu.com/dliu.com/favicon.png" alt="" width="24" height="24"></a><a href="https://dliu.com">dliu.com</a> · <a href="/docs" id="footer-docs">文档</a></footer>

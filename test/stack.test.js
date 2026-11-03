@@ -50,8 +50,8 @@ test('CloudFront routes guest photos to the private bucket before the API, cache
   const [,distribution]=resources('AWS::CloudFront::Distribution')[0];
   const config=distribution.Properties.DistributionConfig;
   const behaviors=config.CacheBehaviors;
-  assert.deepEqual(behaviors.map(b=>b.PathPattern),['old-website','api/guest/*','api/*','auth/*']);
-  const guest=behaviors[1],origin=config.Origins.find(o=>o.Id===guest.TargetOriginId);
+  assert.deepEqual(behaviors.map(b=>b.PathPattern),['health','old-website','api/guest/*','api/*','auth/*']);
+  const guest=behaviors[2],origin=config.Origins.find(o=>o.Id===guest.TargetOriginId);
   assert.ok(text(origin.DomainName).includes(mediaId));assert.ok(origin.OriginAccessControlId);
   assert.deepEqual(guest.AllowedMethods,['GET','HEAD']);
   assert.equal(guest.OriginRequestPolicyId,undefined,'nothing from the viewer is forwarded to the private bucket');
@@ -59,7 +59,7 @@ test('CloudFront routes guest photos to the private bucket before the API, cache
   assert.equal(cache.Properties.CachePolicyConfig.ParametersInCacheKeyAndForwardedToOrigin.CookiesConfig.CookieBehavior,'none');
   assert.equal(cache.Properties.CachePolicyConfig.ParametersInCacheKeyAndForwardedToOrigin.QueryStringsConfig.QueryStringBehavior,'none');
   // CachingDisabled for the API, sign-in and the old website.
-  for(const b of [behaviors[0],behaviors[2],behaviors[3]])assert.equal(b.CachePolicyId,'4135ea2d-6df8-44a3-9df3-4b5a84be39ad',b.PathPattern);
+  for(const b of [behaviors[1],behaviors[3],behaviors[4]])assert.equal(b.CachePolicyId,'4135ea2d-6df8-44a3-9df3-4b5a84be39ad',b.PathPattern);
   assert.equal(config.ViewerCertificate.MinimumProtocolVersion,'TLSv1.2_2021');
   assert.deepEqual(config.Logging?.IncludeCookies??false,false);
 });
@@ -73,6 +73,19 @@ test('the API reads the shared tenant parameter, and only its own secrets under 
   assert.equal(env.TENANT_PARAMETER,'/dliu/entra-tenant-id');
   const param=template.Parameters[env.ENTRA_TENANT_ID.Ref];
   assert.equal(param.Type,'AWS::SSM::Parameter::Value<String>');assert.equal(param.Default,'/dliu/entra-tenant-id');
+});
+
+test('/health reaches the Lambda with nothing forwarded and a 60-second, empty cache key',()=>{
+  const config=resources('AWS::CloudFront::Distribution')[0][1].Properties.DistributionConfig;
+  const behavior=config.CacheBehaviors.find(b=>b.PathPattern==='health');
+  const api=config.CacheBehaviors.find(b=>b.PathPattern==='api/*');
+  assert.equal(behavior.TargetOriginId,api.TargetOriginId);
+  assert.equal(behavior.OriginRequestPolicyId,undefined,'no cookies, Authorization header or query string are forwarded');
+  assert.deepEqual(behavior.AllowedMethods,['GET','HEAD']);
+  const [,cache]=resources('AWS::CloudFront::CachePolicy').find(([id])=>text(behavior.CachePolicyId).includes(id));
+  const c=cache.Properties.CachePolicyConfig,key=c.ParametersInCacheKeyAndForwardedToOrigin;
+  assert.equal(c.DefaultTTL,60);assert.equal(c.MaxTTL,60);
+  assert.equal(key.CookiesConfig.CookieBehavior,'none');assert.equal(key.HeadersConfig.HeaderBehavior,'none');assert.equal(key.QueryStringsConfig.QueryStringBehavior,'none');
 });
 
 test('the Lambda URL needs IAM signatures and the API logs expire',()=>{

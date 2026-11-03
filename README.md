@@ -43,7 +43,9 @@ Open the displayed loopback URL. The preview uses `.local/live-assets/` and opti
 node scripts/check-auth.js
 ```
 
-The script reads the app (client) ID and secret interactively, without printing them or placing them in shell history. It saves them in SSM Parameter Store under `/hujia/`. The tenant ID is shared by every dliu.com app: it lives in `/dliu/entra-tenant-id`, managed by the [dliu-com/audit](https://github.com/dliu-com/audit) stack. The deploy reads it (and fails if it is missing) and passes its value to the Lambda as a fallback; the Lambda reads the parameter itself, with `ssm:GetParameter` on exactly that parameter. Register `https://jh.dliu.com/auth/callback` in Microsoft Entra. Manage account assignments and consent in Microsoft. No application-side list of the two email addresses is needed. Root credentials are prohibited by the maintenance scripts.
+The script reads the app (client) ID and secret interactively, without printing them or placing them in shell history. It saves them in SSM Parameter Store under `/hujia/`. The tenant ID is shared by every dliu.com app: it lives in `/dliu/entra-tenant-id`, managed by the [dliu-com/audit](https://github.com/dliu-com/audit) stack. The deploy reads it (and fails if it is missing) and passes its value to the Lambda as a fallback; the Lambda reads the parameter itself, with `ssm:GetParameter` on exactly that parameter. Register `https://jh.dliu.com/auth/callback` in Microsoft Entra. Manage account assignments and consent in Microsoft. No application-side list of the two email addresses is needed.
+
+Accepted by the owner: Microsoft Entra is the sign-in gate (single tenant, user assignment required). After sign-in, `isAllowed` in `lambda/api/auth.js` accepts any `@dliu.com` account from the tenant; the app keeps no per-person allow-list, so Entra assignment alone decides who gets in. Who is assigned is not published. Root credentials are prohibited by the maintenance scripts.
 
 ## Check and deploy
 
@@ -83,6 +85,14 @@ Clearing: each `npm run deploy` uploads `web/` and invalidates `/*`.
 The CloudFront viewer function (`lib/routes.cjs`, tested in `test/routes.test.js`) answers only on `jh.dliu.com`, maps the docs and guest addresses, and redirects the old ones.
 
 Automatic S3-event clearing (EventBridge → Lambda → CloudFront invalidation) is **not used here, by design**. Only the deployment writes to the public site bucket, and that deployment already clears the edge. Uploads and curated media go to the private bucket, which CloudFront doesn't cache. Leaving it out also saves the shared free allowance of 1,000 invalidation paths a month. Add automatic clearing only if something starts changing edge-cached files outside a deploy.
+
+## Health checks
+
+[status.dliu.com](https://status.dliu.com) tests the site every 15 minutes as an anonymous guest (contract: dliu-com/status `HEALTH.md`).
+
+- `/docs/health` explains it for people: a diagram, one line per function and what a guest can't test, with the technical details folded. `/docs/health.md` (served as `text/markdown; charset=utf-8`) is the full technical version: functions, guest checks, the `/health` format and rules.
+- `GET /health` (`lambda/api/health.js`) reports `memories` (DynamoDB `GetItem` of a fixed empty key), `media` (S3 `HeadObject` of one known object) and `signin` (the SSM settings sign-in already loads) as `application/health+json`: 200 for pass or warn, 503 for fail. CloudFront's `health` behavior forwards no cookies, `Authorization` header or query string, and caches the reply for 60 s; the handler answers before it reads any request data.
+- `test/health.test.js` keeps the endpoint, the page and the Markdown file in sync.
 
 ## Security review
 

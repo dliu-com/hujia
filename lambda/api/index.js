@@ -15,6 +15,8 @@ function createHandler(deps = {}) {
   const now = deps.now || Date.now;
   async function read(id) { const item = await db().get(id); if (!item || item.deleted) throw new model.HttpError(404, 'Not found'); return item; }
   return async event => {
+    // status.dliu.com: answered before cookies, headers or the query string are looked at, and given none of them.
+    if (event.rawPath === '/health' && ['GET','HEAD'].includes(event.requestContext?.http?.method)) return (deps.health || require('./health').health)();
     const method = event.requestContext?.http?.method || 'GET';
     const path = event.rawPath || '/';
     const headers = Object.fromEntries(Object.entries(event.headers || {}).map(([k,v]) => [k.toLowerCase(), v]));
