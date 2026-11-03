@@ -43,7 +43,7 @@ Open the displayed loopback URL. The preview uses `.local/live-assets/` and opti
 node scripts/check-auth.js
 ```
 
-The script reads the tenant ID, app ID and secret interactively, without printing them or placing them in shell history. It saves them in SSM Parameter Store under `/hujia/`. Register `https://jh.dliu.com/auth/callback` in Microsoft Entra. Manage account assignments and consent in Microsoft. No application-side list of the two email addresses is needed. Root credentials are prohibited by the maintenance scripts.
+The script reads the app (client) ID and secret interactively, without printing them or placing them in shell history. It saves them in SSM Parameter Store under `/hujia/`. The tenant ID is shared by every dliu.com app: it lives in `/dliu/entra-tenant-id`, managed by the [dliu-com/audit](https://github.com/dliu-com/audit) stack. The deploy reads it (and fails if it is missing) and passes its value to the Lambda as a fallback; the Lambda reads the parameter itself, with `ssm:GetParameter` on exactly that parameter. Register `https://jh.dliu.com/auth/callback` in Microsoft Entra. Manage account assignments and consent in Microsoft. No application-side list of the two email addresses is needed. Root credentials are prohibited by the maintenance scripts.
 
 ## Check and deploy
 

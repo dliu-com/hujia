@@ -54,21 +54,20 @@ prompt() { # var label default
 
 echo "Microsoft sign-in settings for jh.dliu.com: ${PREFIX} in ${REGION}."
 echo "Press Enter to keep the current value. Settings are stored in AWS, not in this repository."
-TENANT_DEFAULT="$(current entra-tenant-id)"
-if [[ -z "$TENANT_DEFAULT" ]]; then
-  TENANT_DEFAULT="$(aws ssm get-parameter --region "$REGION" --name /travel-plan/entra-tenant-id --query Parameter.Value --output text 2>/dev/null || true)"
+# The tenant ID is shared by every dliu.com app: /dliu/entra-tenant-id, managed by the dliu-com/audit stack.
+if ! aws ssm get-parameter --region "$REGION" --name /dliu/entra-tenant-id --query Parameter.Name --output text >/dev/null 2>&1; then
+  echo "/dliu/entra-tenant-id is missing; deploy the dliu-com/audit stack first." >&2
+  exit 1
 fi
-prompt TENANT_ID "Directory (tenant) ID" "$TENANT_DEFAULT"
 prompt CLIENT_ID "Application (client) ID" "$(current entra-client-id)"
 read -r -s -p "Client secret VALUE (hidden; Enter to keep current): " CLIENT_SECRET; echo
 
-[[ -n "$TENANT_ID" && -n "$CLIENT_ID" ]] || { echo "Tenant ID and client ID are required." >&2; exit 1; }
+[[ -n "$CLIENT_ID" ]] || { echo "The client ID is required." >&2; exit 1; }
 if [[ -z "$CLIENT_SECRET" ]] && ! aws ssm get-parameter --region "$REGION" --name "$PREFIX/entra-client-secret" --query Parameter.Name --output text >/dev/null 2>&1; then
   echo "No client secret stored yet; run again and enter its Value." >&2
   exit 1
 fi
 
-put entra-tenant-id String "$TENANT_ID"
 put entra-client-id String "$CLIENT_ID"
 if [[ -n "$CLIENT_SECRET" ]]; then
   put entra-client-secret SecureString "$CLIENT_SECRET"

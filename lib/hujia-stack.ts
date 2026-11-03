@@ -1,6 +1,6 @@
 import * as path from 'node:path';
 import { Construct } from 'constructs';
-import { Annotations, Stack, StackProps, Fn, Duration, RemovalPolicy, CfnOutput, aws_s3 as s3, aws_s3_deployment as deploy, aws_lambda as lambda, aws_logs as logs, aws_iam as iam, aws_dynamodb as dynamodb, aws_route53 as route53, aws_route53_targets as targets, aws_certificatemanager as acm, aws_cloudfront as cf, aws_cloudfront_origins as origins } from 'aws-cdk-lib';
+import { Annotations, Stack, StackProps, Fn, Duration, RemovalPolicy, CfnOutput, aws_s3 as s3, aws_s3_deployment as deploy, aws_lambda as lambda, aws_logs as logs, aws_iam as iam, aws_ssm as ssm, aws_dynamodb as dynamodb, aws_route53 as route53, aws_route53_targets as targets, aws_certificatemanager as acm, aws_cloudfront as cf, aws_cloudfront_origins as origins } from 'aws-cdk-lib';
 
 export class HujiaStack extends Stack {
   constructor(scope: Construct, id: string, props: StackProps) {
@@ -10,7 +10,11 @@ export class HujiaStack extends Stack {
     const zone=route53.HostedZone.fromHostedZoneAttributes(this,'Zone',{zoneName:Fn.importValue('MainDomain'),hostedZoneId:Fn.importValue('MainHostedZoneId')});
     const table=new dynamodb.Table(this,'Story',{partitionKey:{name:'pk',type:dynamodb.AttributeType.STRING},sortKey:{name:'sk',type:dynamodb.AttributeType.STRING},billingMode:dynamodb.BillingMode.PAY_PER_REQUEST,pointInTimeRecoverySpecification:{pointInTimeRecoveryEnabled:true},deletionProtection:true,removalPolicy:RemovalPolicy.RETAIN});
     const media=new s3.Bucket(this,'PrivateMedia',{blockPublicAccess:s3.BlockPublicAccess.BLOCK_ALL,objectOwnership:s3.ObjectOwnership.BUCKET_OWNER_ENFORCED,encryption:s3.BucketEncryption.S3_MANAGED,enforceSSL:true,versioned:true,removalPolicy:RemovalPolicy.RETAIN,cors:[{allowedMethods:[s3.HttpMethods.PUT],allowedOrigins:[siteUrl],allowedHeaders:['content-type'],maxAge:3600}],lifecycleRules:[{prefix:'pending/',expiration:Duration.days(1),noncurrentVersionExpiration:Duration.days(1)},{abortIncompleteMultipartUploadAfter:Duration.days(1)}]});
-    const api=new lambda.Function(this,'Api',{runtime:lambda.Runtime.NODEJS_22_X,handler:'index.handler',code:lambda.Code.fromAsset(path.join(root,'lambda/api')),timeout:Duration.seconds(20),memorySize:512,reservedConcurrentExecutions:10,environment:{SITE_URL:siteUrl,ROOT_DOMAIN:'dliu.com',TABLE_NAME:table.tableName,FILES_BUCKET:media.bucketName,PARAMETER_PREFIX:'/hujia'},logGroup:new logs.LogGroup(this,'ApiLogs',{retention:logs.RetentionDays.THREE_MONTHS,removalPolicy:RemovalPolicy.DESTROY})});
+    // The Entra tenant is shared by every dliu.com app (dliu-com/audit stack). The deploy fails if it is missing, and passes
+    // its value as a fallback; the Lambda reads the parameter itself so a change needs no redeploy.
+    const tenantParameter='/dliu/entra-tenant-id';
+    const tenantId=ssm.StringParameter.valueForStringParameter(this,tenantParameter);
+    const api=new lambda.Function(this,'Api',{runtime:lambda.Runtime.NODEJS_22_X,handler:'index.handler',code:lambda.Code.fromAsset(path.join(root,'lambda/api')),timeout:Duration.seconds(20),memorySize:512,reservedConcurrentExecutions:10,environment:{ENTRA_TENANT_ID:tenantId,TENANT_PARAMETER:tenantParameter,SITE_URL:siteUrl,ROOT_DOMAIN:'dliu.com',TABLE_NAME:table.tableName,FILES_BUCKET:media.bucketName,PARAMETER_PREFIX:'/hujia'},logGroup:new logs.LogGroup(this,'ApiLogs',{retention:logs.RetentionDays.THREE_MONTHS,removalPolicy:RemovalPolicy.DESTROY})});
     // Least privilege: only the calls the handler makes. Presigned links are signed with this role, so these grants also
     // bound what any link can do. No DeleteObjectVersion: versioning keeps every past copy of the private media recoverable.
     api.addToRolePolicy(new iam.PolicyStatement({actions:['dynamodb:GetItem','dynamodb:Query','dynamodb:PutItem'],resources:[table.tableArn]}));
@@ -20,6 +24,7 @@ export class HujiaStack extends Stack {
     // Lets HeadObject report a missing upload as 404 rather than 403.
     api.addToRolePolicy(new iam.PolicyStatement({actions:['s3:ListBucket'],resources:[media.bucketArn]}));
     api.addToRolePolicy(new iam.PolicyStatement({actions:['ssm:GetParameters'],resources:[this.formatArn({service:'ssm',resource:'parameter',resourceName:'hujia/*'})]}));
+    api.addToRolePolicy(new iam.PolicyStatement({actions:['ssm:GetParameter'],resources:[this.formatArn({service:'ssm',resource:'parameter',resourceName:tenantParameter.slice(1)})]}));
     api.addToRolePolicy(new iam.PolicyStatement({actions:['kms:Decrypt'],resources:['*'],conditions:{StringEquals:{'kms:ViaService':`ssm.${this.region}.amazonaws.com`}}}));
     const url=api.addFunctionUrl({authType:lambda.FunctionUrlAuthType.AWS_IAM});
     const site=new s3.Bucket(this,'Site',{blockPublicAccess:s3.BlockPublicAccess.BLOCK_ALL,encryption:s3.BucketEncryption.S3_MANAGED,enforceSSL:true,removalPolicy:RemovalPolicy.RETAIN});

@@ -62,7 +62,7 @@
       <div class="dg-tier"><div class="dg-tier-label"><strong lang="zh-CN">私有数据</strong><strong lang="en">Private data</strong></div><div class="dg-tier-nodes">
         <div class="dg-node dg-private"><span class="dg-text"><strong>S3 private media</strong><small lang="zh-CN">原始照片、视频、脱敏证件、礼物页面；禁止公开访问，开启版本保留</small><small lang="en">original photos, videos, redacted documents, gift pages; public access blocked, versioned</small></span></div>
         <div class="dg-node dg-private"><span class="dg-text"><strong>DynamoDB</strong><small lang="zh-CN">回忆文字、补写、心愿；时间点恢复，防删除保护</small><small lang="en">memory text, notes, wishes; point-in-time recovery, deletion protection</small></span></div>
-        <div class="dg-node dg-private"><span class="dg-text"><strong>SSM Parameter Store</strong><small lang="zh-CN">Microsoft 应用密钥（加密保存）</small><small lang="en">the Microsoft app secret (encrypted)</small></span></div>
+        <div class="dg-node dg-private"><span class="dg-text"><strong>SSM Parameter Store</strong><small lang="zh-CN">Microsoft 应用密钥（加密保存）在 /hujia/；所有 dliu.com 网站共用的租户 ID 在 /dliu/entra-tenant-id</small><small lang="en">the Microsoft app secret (encrypted) under /hujia/; the tenant ID shared by every dliu.com site in /dliu/entra-tenant-id</small></span></div>
       </div></div>
 
       <h2><span lang="zh-CN">打开一段回忆时发生了什么</span><span lang="en">What happens when you open a memory</span></h2>
@@ -166,7 +166,7 @@
       <ul>
         <li><strong>Private media</strong>: original photos and videos, the redacted licence, the letter and the gift pages (S3 private bucket).</li>
         <li><strong>Memory text</strong>: captions, notes and wishes (DynamoDB).</li>
-        <li><strong>The Microsoft app secret</strong> (SSM). It also derives the cookie-signing keys, so whoever holds it can mint sessions.</li>
+        <li><strong>The Microsoft app secret</strong> (SSM, <code>/hujia/</code>). It also derives the cookie-signing keys, so whoever holds it can mint sessions. The tenant ID is not secret (it appears in the sign-in URL) and is shared by every dliu.com app in <code>/dliu/entra-tenant-id</code>; the Lambda can read only that one shared parameter.</li>
         <li><strong>Session cookies</strong> in our browsers.</li>
         <li><strong>The AWS bill and account</strong>, shared with the other dliu.com sites.</li>
         <li><strong>Site integrity</strong>: the public code bucket and CloudFront.</li>
@@ -204,7 +204,7 @@
           <tr><td>Lambda API</td><td>Session checked before any private read</td><td>Writes need the site's Origin, JSON and the current version; field allowlists</td><td>CloudWatch Logs, 90 days</td><td>Generic error messages; IDs limited to <code>[A-Za-z0-9-]</code>; media only by manifest name</td><td>Reserved concurrency 10 caps cost; 96 KB body limit</td><td>Both members are editors by design; no admin-only data</td></tr>
           <tr><td>Private media bucket</td><td>Presigned links bound to one key, one method and 5 or 15 minutes</td><td>Versioned; the Lambda cannot delete versions or touch retention settings</td><td>—</td><td>Block Public Access, owner-enforced objects, TLS only, SSE-S3; CloudFront can read only the two scenery keys</td><td>Unfinished uploads expire after a day</td><td>—</td></tr>
           <tr><td>DynamoDB</td><td>—</td><td>Conditional writes; point-in-time recovery; deletion protection</td><td>—</td><td>Encrypted at rest; reachable only by the API role</td><td>On-demand; only signed-in calls write</td><td>Lambda role: GetItem, Query, PutItem only</td></tr>
-          <tr><td>Microsoft secret (SSM)</td><td>—</td><td>Changed only with <code>scripts/set-secrets.sh</code></td><td>CloudTrail</td><td>SecureString; never logged or printed</td><td>Cached 5 minutes</td><td>Rotating it also revokes every session</td></tr>
+          <tr><td>Microsoft secret and tenant ID (SSM)</td><td>—</td><td>Secret changed only with <code>scripts/set-secrets.sh</code>; the shared tenant ID only by the dliu-com/audit stack. A wrong tenant ID cannot admit another organisation: tokens must still carry this single-tenant app's client ID</td><td>CloudTrail</td><td>SecureString; never logged or printed</td><td>Cached 5 minutes</td><td>Rotating it also revokes every session</td></tr>
           <tr><td>Supply chain</td><td>—</td><td>The Lambda bundle has no npm dependencies; CDK and TypeScript are build-time only</td><td>Public Git history</td><td>gitleaks finds no secrets in the full history; personal media is ignored by Git</td><td>—</td><td>CI token is read-only and has no AWS access</td></tr>
         </tbody>
       </table></div>

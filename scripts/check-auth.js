@@ -14,7 +14,7 @@ async function request(url, options = {}) {
 async function check() {
   require('./check-aws-identity').assertNonRootIdentity();
   const config = await loadConfig(new SSMClient({ region: REGION }));
-  console.log('AWS settings: all three Microsoft parameters are available.');
+  console.log('AWS settings: client ID and secret (/hujia/) and the shared tenant ID (/dliu/entra-tenant-id) are available.');
   const base = `https://login.microsoftonline.com/${encodeURIComponent(config.tenantId)}`;
   const discovery = await request(`${base}/v2.0/.well-known/openid-configuration`);
   if (!discovery.ok) throw new Error(`Microsoft tenant discovery failed (HTTP ${discovery.status}).`);

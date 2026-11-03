@@ -64,6 +64,17 @@ test('CloudFront routes guest photos to the private bucket before the API, cache
   assert.deepEqual(config.Logging?.IncludeCookies??false,false);
 });
 
+test('the API reads the shared tenant parameter, and only its own secrets under /hujia/',()=>{
+  const [,policy]=resources('AWS::IAM::Policy').find(([,p])=>text(p.Properties.Roles).includes('ApiServiceRole'));
+  const ssmStatements=policy.Properties.PolicyDocument.Statement.filter(s=>list(s.Action).some(a=>a.startsWith('ssm:')));
+  assert.deepEqual(ssmStatements.map(s=>[s.Action,text(s.Resource).match(/parameter\/([^"]+)"/)[1]]),[['ssm:GetParameters','hujia/*'],['ssm:GetParameter','dliu/entra-tenant-id']]);
+  const [,fn]=resources('AWS::Lambda::Function').find(([id])=>id.startsWith('Api'));
+  const env=fn.Properties.Environment.Variables;
+  assert.equal(env.TENANT_PARAMETER,'/dliu/entra-tenant-id');
+  const param=template.Parameters[env.ENTRA_TENANT_ID.Ref];
+  assert.equal(param.Type,'AWS::SSM::Parameter::Value<String>');assert.equal(param.Default,'/dliu/entra-tenant-id');
+});
+
 test('the Lambda URL needs IAM signatures and the API logs expire',()=>{
   const [,url]=resources('AWS::Lambda::Url')[0];assert.equal(url.Properties.AuthType,'AWS_IAM');
   const [,fn]=resources('AWS::Lambda::Function').find(([id])=>id.startsWith('Api'));assert.equal(fn.Properties.ReservedConcurrentExecutions,10);
