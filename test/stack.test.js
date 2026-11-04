@@ -88,6 +88,16 @@ test('/health reaches the Lambda with nothing forwarded and a 60-second, empty c
   assert.equal(key.CookiesConfig.CookieBehavior,'none');assert.equal(key.HeadersConfig.HeaderBehavior,'none');assert.equal(key.QueryStringsConfig.QueryStringBehavior,'none');
 });
 
+test('the deploy hashes the site files for the Lambda pages and writes HTML only after the code it links',()=>{
+  const crypto=require('node:crypto'),web=path.join(__dirname,'../web');
+  const [,fn]=resources('AWS::Lambda::Function').find(([id])=>id.startsWith('Api'));
+  const versions=JSON.parse(fn.Properties.Environment.Variables.ASSET_VERSIONS);
+  for(const file of ['app.js','api-fetch.js','library.js','style.css','icon.png'])assert.equal(versions['/'+file],crypto.createHash('sha256').update(fs.readFileSync(path.join(web,file))).digest('hex').slice(0,10),file);
+  const [,html]=resources('Custom::CDKBucketDeployment').find(([id])=>id.startsWith('HtmlShell'));
+  const [code]=resources('Custom::CDKBucketDeployment').find(([id])=>id.startsWith('PublicCode'));
+  assert.ok(list(html.DependsOn).includes(code),'HtmlShell waits for PublicCode');
+});
+
 test('the Lambda URL needs IAM signatures and the API logs expire',()=>{
   const [,url]=resources('AWS::Lambda::Url')[0];assert.equal(url.Properties.AuthType,'AWS_IAM');
   const [,fn]=resources('AWS::Lambda::Function').find(([id])=>id.startsWith('Api'));assert.equal(fn.Properties.ReservedConcurrentExecutions,10);

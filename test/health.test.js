@@ -49,7 +49,7 @@ test('the handler answers /health without reading cookies, headers, the query st
   assert.notEqual(post.statusCode,200);
 });
 
-test('the function keys agree across /health, the Testing tab and /docs/health.md',()=>{
+test('the function keys agree across /health, the Health tab and /docs/health.md',()=>{
   const mdFunctions=mdRows(section(md,'## Functions')).map(r=>r[0]);
   const pageFunctions=[...page.matchAll(/data-function="([a-z]+)"/g)].map(m=>m[1]);
   assert.deepEqual(pageFunctions,mdFunctions);
@@ -60,7 +60,7 @@ test('the function keys agree across /health, the Testing tab and /docs/health.m
   for(const key of mdRows(section(md,'## Guest checks')).map(r=>r[0]))assert.ok(mdFunctions.includes(key),key);
 });
 
-test('the Markdown file has every guest check, and the Testing tab\'s numbers and chart follow from it',()=>{
+test('the Markdown file has every guest check, and the Health tab\'s numbers and chart follow from it',()=>{
   const guest=mdRows(section(md,'## Guest checks')),reads=mdRows(section(md,'## Health endpoint'));
   for(const [,method,url,status] of guest){assert.match(method,/^(GET|HEAD)$/);assert.match(url,/^https:\/\/jh\.dliu\.com\//);assert.match(status,/^\d{3}$/);}
   assert.ok(guest.some(r=>r[2]==='https://jh.dliu.com/auth/login'&&r[3]==='302'&&r[5].includes('https://login.microsoftonline.com/')));
@@ -77,9 +77,9 @@ test('the Markdown file has every guest check, and the Testing tab\'s numbers an
   for(const [p] of page.replace('href="/docs/health.md"','').matchAll(/\/(?:api|auth|health|docs)[a-z\/]*/g))assert.ok(tested.has(p),p);
 });
 
-test('the Testing tab (/docs#health) shows flows, numbers, a table and a chart, without exact technical details',()=>{
+test('the Health tab (/docs#health) shows flows, numbers, a table and a chart, without exact technical details',()=>{
   assert.match(page,/data-path="\/docs#health"/);
-  assert.match(html,/<a href="\/docs#health"><span lang="zh-CN">测试<\/span><span lang="en">Testing<\/span><\/a>/);
+  assert.match(html,/<a href="\/docs#health"><span lang="zh-CN">健康<\/span><span lang="en">Health<\/span><\/a>/);
   assert.doesNotMatch(html,/href="\/docs\/health"/);
   assert.match(read('web/app.js'),/location\.hash==='#health'\?'\/docs#health'/);
   assert.match(page,/class="dg-flow"/);assert.ok((page.match(/class="dg-step/g)||[]).length>=4);assert.match(page,/class="dg-arrow"/);

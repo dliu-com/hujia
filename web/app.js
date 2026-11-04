@@ -7,7 +7,7 @@ function link(href,text){const a=el('a',text);a.href=href;return a;}
 // /docs, /docs/cost and /docs/security share docs.html; show the section for this address.
 function renderDocs(){
   const sections=document.querySelectorAll('.dl-docs[data-path]');if(!sections.length)return;
-  // The Testing tab lives at /docs#health; the other tabs have their own paths.
+  // The Health tab lives at /docs#health; the other tabs have their own paths.
   const base=location.pathname.replace(/\/$/,'')||'/docs',path=base==='/docs'&&location.hash==='#health'?'/docs#health':base;
   const current=[...sections].some(s=>s.dataset.path===path)?path:'/docs';
   sections.forEach(s=>{s.hidden=s.dataset.path!==current;});

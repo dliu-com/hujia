@@ -12,7 +12,7 @@
 @media(max-width:700px){.home{display:block;padding-top:36px}.home h1{font-size:32px}.guest-scenes{margin-top:32px}.guest-scenes img{max-height:none}}
 /* Docs show the paragraphs in the chosen language; untagged tables serve both. */
 html[lang="zh-CN"] :is(.dl-docs,.dl-tabs) [lang="en"],html[lang="en"] :is(.dl-docs,.dl-tabs) [lang="zh-CN"],.dl-docs[hidden]{display:none}
-/* Testing tab: a bar per function, its length the number of checks (inline styles are blocked by the CSP). */
+/* Health tab: a bar per function, its length the number of checks (inline styles are blocked by the CSP). */
 .health-chart{display:grid;gap:10px;margin:16px 0 24px}
 .health-chart-row{display:grid;grid-template-columns:minmax(6em,min(35%,200px)) minmax(4em,1fr) 2em;gap:12px;align-items:center}
 .health-chart-bar{display:block;height:16px;background:var(--dl-accent);border-radius:var(--dl-radius-small)}

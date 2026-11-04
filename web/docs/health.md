@@ -2,7 +2,7 @@
 
 How [status.dliu.com](https://status.dliu.com) tests https://jh.dliu.com as an anonymous guest, following the dliu.com
 health contract (dliu-com/status `HEALTH.md`). The people's version, with a diagram, is the
-Testing tab at https://jh.dliu.com/docs#health. This file has every technical detail and is enough on its own to implement the tests.
+Health tab at https://jh.dliu.com/docs#health. This file has every technical detail and is enough on its own to implement the tests.
 
 jh.dliu.com is a private memory site for two people. Guests see only the entrance, the docs and two public scenery
 photos; everything else needs a Microsoft sign-in. The checks below prove the public parts work and that the private

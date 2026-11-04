@@ -1,4 +1,6 @@
 import * as path from 'node:path';
+import * as fs from 'node:fs';
+import * as crypto from 'node:crypto';
 import { Construct } from 'constructs';
 import { Annotations, Stack, StackProps, Fn, Duration, RemovalPolicy, CfnOutput, aws_s3 as s3, aws_s3_deployment as deploy, aws_lambda as lambda, aws_logs as logs, aws_iam as iam, aws_ssm as ssm, aws_dynamodb as dynamodb, aws_route53 as route53, aws_route53_targets as targets, aws_certificatemanager as acm, aws_cloudfront as cf, aws_cloudfront_origins as origins } from 'aws-cdk-lib';
 
@@ -6,6 +8,10 @@ export class HujiaStack extends Stack {
   constructor(scope: Construct, id: string, props: StackProps) {
     super(scope, id, props);
     const root=path.join(__dirname,'..');
+    // Content hashes of the site's own scripts, styles and icon: pages link them as /file?v=<hash> (lambda/api/assets.js).
+    const webDir=path.join(root,'web');
+    const assetVersions:Record<string,string>=Object.fromEntries(fs.readdirSync(webDir).filter(f=>/\.(js|css|png)$/.test(f)).sort().map(f=>[`/${f}`,crypto.createHash('sha256').update(fs.readFileSync(path.join(webDir,f))).digest('hex').slice(0,10)]));
+    const {stamp}=require('../lambda/api/assets') as {stamp:(html:string,versions:Record<string,string>)=>string};
     const domain='jh.dliu.com', siteUrl=`https://${domain}`;
     const zone=route53.HostedZone.fromHostedZoneAttributes(this,'Zone',{zoneName:Fn.importValue('MainDomain'),hostedZoneId:Fn.importValue('MainHostedZoneId')});
     const table=new dynamodb.Table(this,'Story',{partitionKey:{name:'pk',type:dynamodb.AttributeType.STRING},sortKey:{name:'sk',type:dynamodb.AttributeType.STRING},billingMode:dynamodb.BillingMode.PAY_PER_REQUEST,pointInTimeRecoverySpecification:{pointInTimeRecoveryEnabled:true},deletionProtection:true,removalPolicy:RemovalPolicy.RETAIN});
@@ -14,7 +20,7 @@ export class HujiaStack extends Stack {
     // its value as a fallback; the Lambda reads the parameter itself so a change needs no redeploy.
     const tenantParameter='/dliu/entra-tenant-id';
     const tenantId=ssm.StringParameter.valueForStringParameter(this,tenantParameter);
-    const api=new lambda.Function(this,'Api',{runtime:lambda.Runtime.NODEJS_22_X,handler:'index.handler',code:lambda.Code.fromAsset(path.join(root,'lambda/api')),timeout:Duration.seconds(20),memorySize:512,reservedConcurrentExecutions:10,environment:{ENTRA_TENANT_ID:tenantId,TENANT_PARAMETER:tenantParameter,SITE_URL:siteUrl,ROOT_DOMAIN:'dliu.com',TABLE_NAME:table.tableName,FILES_BUCKET:media.bucketName,PARAMETER_PREFIX:'/hujia'},logGroup:new logs.LogGroup(this,'ApiLogs',{retention:logs.RetentionDays.THREE_MONTHS,removalPolicy:RemovalPolicy.DESTROY})});
+    const api=new lambda.Function(this,'Api',{runtime:lambda.Runtime.NODEJS_22_X,handler:'index.handler',code:lambda.Code.fromAsset(path.join(root,'lambda/api')),timeout:Duration.seconds(20),memorySize:512,reservedConcurrentExecutions:10,environment:{ASSET_VERSIONS:JSON.stringify(assetVersions),ENTRA_TENANT_ID:tenantId,TENANT_PARAMETER:tenantParameter,SITE_URL:siteUrl,ROOT_DOMAIN:'dliu.com',TABLE_NAME:table.tableName,FILES_BUCKET:media.bucketName,PARAMETER_PREFIX:'/hujia'},logGroup:new logs.LogGroup(this,'ApiLogs',{retention:logs.RetentionDays.THREE_MONTHS,removalPolicy:RemovalPolicy.DESTROY})});
     // Least privilege: only the calls the handler makes. Presigned links are signed with this role, so these grants also
     // bound what any link can do. No DeleteObjectVersion: versioning keeps every past copy of the private media recoverable.
     api.addToRolePolicy(new iam.PolicyStatement({actions:['dynamodb:GetItem','dynamodb:Query','dynamodb:PutItem'],resources:[table.tableArn]}));
@@ -60,8 +66,10 @@ export class HujiaStack extends Stack {
     (distribution.node.defaultChild as cf.CfnDistribution).addPropertyOverride('DistributionConfig.Logging',{IncludeCookies:false});
     api.addPermission('CloudFrontInvoke',{principal:new iam.ServicePrincipal('cloudfront.amazonaws.com'),action:'lambda:InvokeFunction',sourceArn:distribution.distributionArn,invokedViaFunctionUrl:true});
     // HTML shells stay no-cache. Public JS, CSS and images are invalidated on every deploy, so the edge may keep them longer.
-    new deploy.BucketDeployment(this,'PublicCode',{sources:[deploy.Source.asset(path.join(root,'web'))],exclude:['*.html','*.md'],destinationBucket:site,distribution,distributionPaths:['/*'],cacheControl:[deploy.CacheControl.fromString('public, max-age=300, s-maxage=86400, stale-while-revalidate=86400')]});
-    new deploy.BucketDeployment(this,'HtmlShell',{sources:[deploy.Source.asset(path.join(root,'web'))],exclude:['*'],include:['*.html'],destinationBucket:site,distribution,distributionPaths:['/*'],cacheControl:[deploy.CacheControl.noCache()]});
+    const publicCode=new deploy.BucketDeployment(this,'PublicCode',{sources:[deploy.Source.asset(path.join(root,'web'))],exclude:['*.html','*.md'],destinationBucket:site,distribution,distributionPaths:['/*'],cacheControl:[deploy.CacheControl.fromString('public, max-age=300, s-maxage=86400, stale-while-revalidate=86400')]});
+    // HTML is written with the hashed links, and only after the scripts and styles it names are uploaded and cleared.
+    const htmlShell=new deploy.BucketDeployment(this,'HtmlShell',{sources:fs.readdirSync(webDir).filter(f=>f.endsWith('.html')).sort().map(f=>deploy.Source.data(f,stamp(fs.readFileSync(path.join(webDir,f),'utf8'),assetVersions))),exclude:['*'],include:['*.html'],destinationBucket:site,distribution,distributionPaths:['/*'],cacheControl:[deploy.CacheControl.noCache()]});
+    htmlShell.node.addDependency(publicCode);
     // Machine-readable test instructions (/docs/health.md) for status.dliu.com and AI agents.
     new deploy.BucketDeployment(this,'Markdown',{sources:[deploy.Source.asset(path.join(root,'web'))],exclude:['*'],include:['*.md'],destinationBucket:site,distribution,distributionPaths:['/docs/*'],contentType:'text/markdown; charset=utf-8',cacheControl:[deploy.CacheControl.noCache()]});
     new route53.ARecord(this,'MainA',{zone,recordName:'jh',target:route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution))});
