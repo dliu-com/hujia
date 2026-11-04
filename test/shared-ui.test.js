@@ -87,3 +87,9 @@ test('the CSP allows only the shared folders on files.dliu.com',()=>{
   // Public pages load nothing from S3, so the site-wide CSP does not name the private bucket.
   assert.doesNotMatch(stack.match(/contentSecurityPolicy:`([^`]+)`/)[1],/amazonaws|bucketName/);
 });
+
+test('the Architecture tab starts with a link to the source code',()=>{
+  const html=pages['web/docs.html'],start=html.indexOf('<article class="dl-docs" id="architecture"');
+  const first=html.slice(html.indexOf('>',start)+1).trimStart();
+  assert.ok(first.startsWith('<p class="dl-docs-repo"><span lang="zh-CN">源代码：</span><span lang="en">Source code:</span> <a href="https://github.com/dliu-com/hujia">github.com/dliu-com/hujia</a></p>'),first.slice(0,120));
+});
