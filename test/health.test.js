@@ -74,7 +74,7 @@ test('the Markdown file has every guest check, and the Health tab\'s numbers and
   for(const n of new Set(bars))assert.ok(read('web/style.css').includes(`.health-chart-bar[data-checks="${n}"]{width:`),`bar width for ${n}`);
   // Each endpoint the tab names is one the Markdown file tests.
   const tested=new Set([...guest.map(r=>new URL(r[2]).pathname),'/health']);
-  for(const [p] of page.replace('href="/docs/health.md"','').matchAll(/\/(?:api|auth|health|docs)[a-z\/]*/g))assert.ok(tested.has(p),p);
+  for(const [p] of page.replaceAll('/docs/health.md','').matchAll(/\/(?:api|auth|health|docs)[a-z\/]*/g))assert.ok(tested.has(p),p);
 });
 
 test('the Health tab (/docs#health) shows flows, numbers, a table and a chart, without exact technical details',()=>{
@@ -92,6 +92,15 @@ test('the Health tab (/docs#health) shows flows, numbers, a table and a chart, w
   // headers, content types or JSON.
   assert.doesNotMatch(page,/<code|<pre|<details|https?:\/\/|\b(GET|HEAD|POST)\b|\b(200|301|302|401|403|404|503)\b|application\/|text\/|Content-Type|Cache-Control|Authorization|cookie|[{}]/i);
   assert.match(page,/<p><a href="\/docs\/health\.md"><span lang="zh-CN">[^<]+<\/span><span lang="en">Technical version for machines \(Markdown\)<\/span><\/a><\/p>\s*$/);
+  // A link to the machine-readable file right under the heading, as well as at the end.
+  assert.match(page,/<\/h1>\n\s*<p class="dg-note"><span lang="zh-CN">[^<]+<\/span><span lang="en">Machine-readable version: <\/span><a href="\/docs\/health\.md">\/docs\/health\.md<\/a><\/p>/);
+  // Diagrams in the shared style: big numbers with icons, tiers with badges and icons, labelled arrows.
+  assert.ok((page.match(/<div class="dg-stat"><span class="dg-icon" data-icon="[a-z0-9]+"><\/span>/g)||[]).length>=4);
+  const fig=page.slice(page.indexOf('<figure class="dg dg-tiers">'),page.indexOf('</figure>',page.indexOf('<figure class="dg dg-tiers">')));
+  assert.deepEqual([...fig.matchAll(/<div class="dg-tier dg-([a-z]+)"><div class="dg-tier-label"><span class="dg-badge">/g)].map(m=>m[1]),['untrusted','edge','app','private']);
+  assert.equal((fig.match(/<div class="dg-link"><span class="dg-arrow"><\/span>/g)||[]).length,3);
+  const nodes=fig.match(/<div class="dg-node">/g)||[];
+  assert.equal((fig.match(/<div class="dg-node"><span class="dg-icon" data-icon="[a-z0-9]+"><\/span>/g)||[]).length,nodes.length);
 });
 
 test('/docs/health moves to /docs#health, /health is routed, and health.md is deployed as Markdown',()=>{
@@ -102,4 +111,15 @@ test('/docs/health moves to /docs#health, /health is routed, and health.md is de
   assert.match(stack,/'health':healthBehavior/);
   assert.match(stack,/new deploy\.BucketDeployment\(this,'Markdown',\{[^}]*include:\['\*\.md'\][^}]*contentType:'text\/markdown; charset=utf-8'/);
   assert.match(stack,/exclude:\['\*\.html','\*\.md'\]/);
+});
+
+test('every diagram icon is drawn, and a service has the same icon on the Architecture and Health tabs',()=>{
+  const app=read('web/app.js'),icons=new Set([...app.matchAll(/^\s+([a-z0-9]+):\['#[0-9a-f]{6}'/gm)].map(m=>m[1]));
+  for(const [,name] of html.matchAll(/data-icon="([a-z0-9]+)"/g))assert.ok(icons.has(name),name);
+  const arch=html.slice(html.indexOf('id="architecture"'),html.indexOf('</article>',html.indexOf('id="architecture"')));
+  const iconOf=(text,title)=>(text.match(new RegExp(`data-icon="([a-z0-9]+)"><\\/span><span class="dg-text">(?:<strong>)?(?:<strong lang="zh-CN">[^<]*<\\/strong><strong lang="en">)?${title}`))||[])[1];
+  for(const [service,icon] of [['Lambda API','lambda'],['Microsoft Entra','entra'],['CloudFront','cloudfront']]){assert.equal(iconOf(arch,service),icon,service);assert.equal(iconOf(page,service)??icon,icon,service);}
+  assert.match(page,/data-icon="dynamodb"><\/span><span class="dg-text"><strong lang="zh-CN">回忆存储/);assert.match(arch,/data-icon="dynamodb"><\/span><span class="dg-text"><strong>DynamoDB/);
+  assert.match(page,/data-icon="ssm"><\/span>/);assert.match(arch,/data-icon="ssm"><\/span><span class="dg-text"><strong>SSM Parameter Store/);
+  assert.match(app,/box\.style\.setProperty\('--dg',colour\)/);
 });

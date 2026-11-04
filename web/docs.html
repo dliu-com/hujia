@@ -41,39 +41,45 @@
       <p class="lead" lang="zh-CN">这是德威送给胡佳的一份礼物：把写过的卡片、做过的网页、一起住过的家和走过的地方，放在一个可以慢慢翻看的地方。访客只看到入口和两张精选风景照片；其余回忆都需要用 Microsoft 账号登录。</p>
       <p class="lead" lang="en">A gift from Dewei to Hujia: a place to revisit the cards, the first website, the homes and the places we have shared. Visitors see only the entrance and two selected scenery photos; every other memory needs a Microsoft sign-in.</p>
       <div class="dg-stats">
-        <div class="dg-stat"><span class="dg-text"><strong>0</strong><small lang="zh-CN">台服务器：没人访问时不运行任何东西</small><small lang="en">servers: nothing runs while nobody visits</small></span></div>
-        <div class="dg-stat"><span class="dg-text"><strong>1</strong><small lang="zh-CN">个 Lambda：登录、读取和保存</small><small lang="en">Lambda: sign-in, reads and saves</small></span></div>
-        <div class="dg-stat"><span class="dg-text"><strong>2</strong><small lang="zh-CN">张公开照片，其余全部私有</small><small lang="en">public photos; everything else is private</small></span></div>
-        <div class="dg-stat"><span class="dg-text"><strong>5 min</strong><small lang="zh-CN">私人媒体链接的有效期</small><small lang="en">lifetime of a private media link</small></span></div>
+        <div class="dg-stat"><span class="dg-icon" data-icon="power"></span><span class="dg-text"><strong>0</strong><small lang="zh-CN">台服务器：没人访问时不运行任何东西</small><small lang="en">servers: nothing runs while nobody visits</small></span></div>
+        <div class="dg-stat"><span class="dg-icon" data-icon="lambda"></span><span class="dg-text"><strong>1</strong><small lang="zh-CN">个 Lambda：登录、读取和保存</small><small lang="en">Lambda: sign-in, reads and saves</small></span></div>
+        <div class="dg-stat"><span class="dg-icon" data-icon="s3"></span><span class="dg-text"><strong>2</strong><small lang="zh-CN">张公开照片，其余全部私有</small><small lang="en">public photos; everything else is private</small></span></div>
+        <div class="dg-stat"><span class="dg-icon" data-icon="clock"></span><span class="dg-text"><strong>5 min</strong><small lang="zh-CN">私人媒体链接的有效期</small><small lang="en">lifetime of a private media link</small></span></div>
       </div>
 
-      <h2><span lang="zh-CN">组成部分</span><span lang="en">Components</span></h2>
-      <div class="dg-tier"><div class="dg-tier-label"><strong lang="zh-CN">浏览器</strong><strong lang="en">Browser</strong></div><div class="dg-tier-nodes">
-        <div class="dg-node dg-untrusted"><span class="dg-text"><strong lang="zh-CN">访客</strong><strong lang="en">Visitor</strong><small lang="zh-CN">入口页和两张风景照片</small><small lang="en">entrance page and two scenery photos</small></span></div>
-        <div class="dg-node dg-untrusted"><span class="dg-text"><strong lang="zh-CN">我们两个人</strong><strong lang="en">The two of us</strong><small lang="zh-CN">Microsoft 登录后的回忆册、相簿和旧网页</small><small lang="en">memory book, album and old website after Microsoft sign-in</small></span></div>
-      </div></div>
-      <div class="dg-tier"><div class="dg-tier-label"><strong lang="zh-CN">边缘</strong><strong lang="en">Edge</strong></div><div class="dg-tier-nodes">
-        <div class="dg-node dg-edge"><span class="dg-text"><strong>CloudFront jh.dliu.com</strong><small lang="zh-CN">TLS 1.2+、HTTP/3、安全响应头；只接受 jh.dliu.com 这个域名</small><small lang="en">TLS 1.2+, HTTP/3, security headers; answers only on jh.dliu.com</small></span></div>
-      </div></div>
-      <div class="dg-tier"><div class="dg-tier-label"><strong lang="zh-CN">应用</strong><strong lang="en">App</strong></div><div class="dg-tier-nodes">
-        <div class="dg-node dg-app"><span class="dg-text"><strong>S3 site</strong><small lang="zh-CN">公开的网页代码（HTML、JS、CSS、图标），不含任何私人内容</small><small lang="en">public code (HTML, JS, CSS, icon), no private content</small></span></div>
-        <div class="dg-node dg-app"><span class="dg-text"><strong>Lambda API</strong><small lang="zh-CN">/api/*、/auth/*：检查登录、签发 5 分钟媒体链接、保存文字</small><small lang="en">/api/*, /auth/*: checks the session, issues 5-minute media links, saves text</small></span></div>
-        <div class="dg-node dg-app"><span class="dg-text"><strong>Microsoft Entra</strong><small lang="zh-CN">只允许被分配到这个应用的账号登录</small><small lang="en">only accounts assigned to this app can sign in</small></span></div>
-      </div></div>
-      <div class="dg-tier"><div class="dg-tier-label"><strong lang="zh-CN">私有数据</strong><strong lang="en">Private data</strong></div><div class="dg-tier-nodes">
-        <div class="dg-node dg-private"><span class="dg-text"><strong>S3 private media</strong><small lang="zh-CN">原始照片、视频、脱敏证件、礼物页面；禁止公开访问，开启版本保留</small><small lang="en">original photos, videos, redacted documents, gift pages; public access blocked, versioned</small></span></div>
-        <div class="dg-node dg-private"><span class="dg-text"><strong>DynamoDB</strong><small lang="zh-CN">回忆文字、补写、心愿；时间点恢复，防删除保护</small><small lang="en">memory text, notes, wishes; point-in-time recovery, deletion protection</small></span></div>
-        <div class="dg-node dg-private"><span class="dg-text"><strong>SSM Parameter Store</strong><small lang="zh-CN">Microsoft 应用密钥（加密保存）在 /hujia/；所有 dliu.com 网站共用的租户 ID 在 /dliu/entra-tenant-id</small><small lang="en">the Microsoft app secret (encrypted) under /hujia/; the tenant ID shared by every dliu.com site in /dliu/entra-tenant-id</small></span></div>
-      </div></div>
+      <figure class="dg dg-tiers">
+        <figcaption><span lang="zh-CN">组件</span><span lang="en">Components</span></figcaption>
+        <div class="dg-tier dg-untrusted"><div class="dg-tier-label"><span class="dg-badge"><span lang="zh-CN">浏览器</span><span lang="en">Browser</span></span><strong lang="zh-CN">用户</strong><strong lang="en">People</strong></div><div class="dg-tier-nodes">
+          <div class="dg-node"><span class="dg-icon" data-icon="users"></span><span class="dg-text"><strong lang="zh-CN">访客</strong><strong lang="en">Visitor</strong><small lang="zh-CN">入口页和两张风景照片</small><small lang="en">entrance page and two scenery photos</small></span></div>
+          <div class="dg-node"><span class="dg-icon" data-icon="user"></span><span class="dg-text"><strong lang="zh-CN">我们两个人</strong><strong lang="en">The two of us</strong><small lang="zh-CN">Microsoft 登录后的回忆册、相簿和旧网页</small><small lang="en">memory book, album and old website after Microsoft sign-in</small></span></div>
+        </div></div>
+        <div class="dg-link"><span class="dg-arrow"></span><span lang="zh-CN">HTTPS，只接受 jh.dliu.com</span><span lang="en">HTTPS, jh.dliu.com only</span></div>
+        <div class="dg-tier dg-edge"><div class="dg-tier-label"><span class="dg-badge"><span lang="zh-CN">边缘</span><span lang="en">Edge</span></span><strong>CloudFront</strong></div><div class="dg-tier-nodes">
+          <div class="dg-node"><span class="dg-icon" data-icon="cloudfront"></span><span class="dg-text"><strong>CloudFront</strong><small lang="zh-CN">TLS 1.2+、HTTP/3、安全响应头；缓存公开代码和两张风景照片</small><small lang="en">TLS 1.2+, HTTP/3, security headers; caches the public code and the two scenery photos</small></span></div>
+          <div class="dg-node"><span class="dg-icon" data-icon="page"></span><span class="dg-text"><strong lang="zh-CN">页面函数</strong><strong lang="en">Pages function</strong><small lang="zh-CN">只接受 jh.dliu.com，安排 /docs 和旧地址</small><small lang="en">answers only on jh.dliu.com, routes /docs and old addresses</small></span></div>
+        </div></div>
+        <div class="dg-link"><span class="dg-arrow"></span><span lang="zh-CN">登录和私人内容由 CloudFront 签名（OAC）转给 Lambda</span><span lang="en">sign-in and private content go to the Lambda, signed by CloudFront (OAC)</span></div>
+        <div class="dg-tier dg-app"><div class="dg-tier-label"><span class="dg-badge"><span lang="zh-CN">按需</span><span lang="en">On demand</span></span><strong lang="zh-CN">应用</strong><strong lang="en">App</strong></div><div class="dg-tier-nodes">
+          <div class="dg-node"><span class="dg-icon" data-icon="s3"></span><span class="dg-text"><strong>S3 site</strong><small lang="zh-CN">公开的网页代码（HTML、JS、CSS、图标），不含任何私人内容</small><small lang="en">public code (HTML, JS, CSS, icon), no private content</small></span></div>
+          <div class="dg-node"><span class="dg-icon" data-icon="lambda"></span><span class="dg-text"><strong>Lambda API</strong><small lang="zh-CN">检查登录、签发 5 分钟媒体链接、保存文字</small><small lang="en">checks the session, issues 5-minute media links, saves text</small></span></div>
+          <div class="dg-node"><span class="dg-icon" data-icon="entra"></span><span class="dg-text"><strong>Microsoft Entra</strong><small lang="zh-CN">只允许被分配到这个应用的账号登录</small><small lang="en">only accounts assigned to this app can sign in</small></span></div>
+        </div></div>
+        <div class="dg-link"><span class="dg-arrow"></span><span lang="zh-CN">IAM 角色，最小权限</span><span lang="en">IAM role, least privilege</span></div>
+        <div class="dg-tier dg-private"><div class="dg-tier-label"><span class="dg-badge"><span lang="zh-CN">私有</span><span lang="en">Private</span></span><strong lang="zh-CN">私有数据</strong><strong lang="en">Private data</strong></div><div class="dg-tier-nodes">
+          <div class="dg-node"><span class="dg-icon" data-icon="s3"></span><span class="dg-text"><strong>S3 private media</strong><small lang="zh-CN">原始照片、视频、脱敏证件、礼物页面；禁止公开访问，开启版本保留</small><small lang="en">original photos, videos, redacted documents, gift pages; public access blocked, versioned</small></span></div>
+          <div class="dg-node"><span class="dg-icon" data-icon="dynamodb"></span><span class="dg-text"><strong>DynamoDB</strong><small lang="zh-CN">回忆文字、补写、心愿；时间点恢复，防删除保护</small><small lang="en">memory text, notes, wishes; point-in-time recovery, deletion protection</small></span></div>
+          <div class="dg-node"><span class="dg-icon" data-icon="ssm"></span><span class="dg-text"><strong>SSM Parameter Store</strong><small lang="zh-CN">Microsoft 应用密钥（加密保存）在 /hujia/；所有 dliu.com 网站共用的租户 ID 在 /dliu/entra-tenant-id</small><small lang="en">the Microsoft app secret (encrypted) under /hujia/; the tenant ID shared by every dliu.com site in /dliu/entra-tenant-id</small></span></div>
+        </div></div>
+      </figure>
 
       <h2><span lang="zh-CN">打开一段回忆时发生了什么</span><span lang="en">What happens when you open a memory</span></h2>
       <div class="dg-flow">
         <div class="dg-step"><span class="dg-num">1</span><span class="dg-text"><strong lang="zh-CN">登录</strong><strong lang="en">Sign in</strong><small lang="zh-CN">/auth/login 跳转到 Microsoft（PKCE、state、nonce）</small><small lang="en">/auth/login sends you to Microsoft (PKCE, state, nonce)</small></span></div>
-        <span class="dg-arrow" aria-hidden="true">→</span>
+        <span class="dg-arrow"></span>
         <div class="dg-step"><span class="dg-num">2</span><span class="dg-text"><strong lang="zh-CN">验证</strong><strong lang="en">Verify</strong><small lang="zh-CN">Lambda 用密钥换取 id_token，检查签名、租户、受众和 nonce</small><small lang="en">Lambda exchanges the code with the secret and checks the id_token signature, tenant, audience and nonce</small></span></div>
-        <span class="dg-arrow" aria-hidden="true">→</span>
+        <span class="dg-arrow"></span>
         <div class="dg-step"><span class="dg-num">3</span><span class="dg-text"><strong lang="zh-CN">会话</strong><strong lang="en">Session</strong><small lang="zh-CN">签名的 __Host- Cookie（HttpOnly、Secure、SameSite=Lax，30 天）</small><small lang="en">signed __Host- cookie (HttpOnly, Secure, SameSite=Lax, 30 days)</small></span></div>
-        <span class="dg-arrow" aria-hidden="true">→</span>
+        <span class="dg-arrow"></span>
         <div class="dg-step"><span class="dg-num">4</span><span class="dg-text"><strong lang="zh-CN">媒体</strong><strong lang="en">Media</strong><small lang="zh-CN">每张照片都是一个 5 分钟后失效的 S3 签名链接，从不缓存</small><small lang="en">each photo is a presigned S3 link that expires after 5 minutes and is never cached</small></span></div>
       </div>
 
@@ -446,32 +452,60 @@
     </article>
     <article class="dl-docs" id="health" data-path="/docs#health">
       <h1><span lang="zh-CN">网站怎么被测试</span><span lang="en">How the site is tested</span></h1>
+      <p class="dg-note"><span lang="zh-CN">给机器读的版本：</span><span lang="en">Machine-readable version: </span><a href="/docs/health.md">/docs/health.md</a></p>
       <p class="lead" lang="zh-CN">status.dliu.com 定时以访客身份检查这个网站：不登录，只看，不改变任何内容，也看不到任何私人回忆。</p>
       <p class="lead" lang="en">status.dliu.com regularly checks this site as a guest: it never signs in, only looks, changes nothing, and sees none of the private memories.</p>
       <div class="dg-stats">
-        <div class="dg-stat"><span class="dg-text"><strong data-count="functions">6</strong><small lang="zh-CN">项功能被测试</small><small lang="en">functions tested</small></span></div>
-        <div class="dg-stat"><span class="dg-text"><strong data-count="checks">9</strong><small lang="zh-CN">个检查，每轮都做</small><small lang="en">checks in every run</small></span></div>
-        <div class="dg-stat"><span class="dg-text"><strong>15 min</strong><small lang="zh-CN">每 15 分钟一轮</small><small lang="en">a run every 15 minutes</small></span></div>
-        <div class="dg-stat"><span class="dg-text"><strong>3</strong><small lang="zh-CN">个地方：爱尔兰、美国东部、东京</small><small lang="en">places: Ireland, US East, Tokyo</small></span></div>
-        <div class="dg-stat"><span class="dg-text"><strong>0</strong><small lang="zh-CN">次登录，0 处改动</small><small lang="en">sign-ins, 0 changes</small></span></div>
+        <div class="dg-stat"><span class="dg-icon" data-icon="check"></span><span class="dg-text"><strong data-count="functions">6</strong><small lang="zh-CN">项功能被测试</small><small lang="en">functions tested</small></span></div>
+        <div class="dg-stat"><span class="dg-icon" data-icon="chart"></span><span class="dg-text"><strong data-count="checks">9</strong><small lang="zh-CN">个检查，每轮都做</small><small lang="en">checks in every run</small></span></div>
+        <div class="dg-stat"><span class="dg-icon" data-icon="clock"></span><span class="dg-text"><strong>15 min</strong><small lang="zh-CN">每 15 分钟一轮</small><small lang="en">a run every 15 minutes</small></span></div>
+        <div class="dg-stat"><span class="dg-icon" data-icon="pin"></span><span class="dg-text"><strong>4</strong><small lang="zh-CN">个地方：爱尔兰、弗吉尼亚、东京，加上每小时一次中国大陆</small><small lang="en">places: Ireland, Virginia, Tokyo, and mainland China hourly</small></span></div>
+        <div class="dg-stat"><span class="dg-icon" data-icon="lock"></span><span class="dg-text"><strong>0</strong><small lang="zh-CN">次登录，0 处改动</small><small lang="en">sign-ins, 0 changes</small></span></div>
       </div>
 
-      <h2><span lang="zh-CN">一轮测试</span><span lang="en">One test run</span></h2>
+      <figure class="dg dg-tiers">
+        <figcaption><span lang="zh-CN">网站怎么被测试</span><span lang="en">How the site is tested</span></figcaption>
+        <div class="dg-tier dg-untrusted"><div class="dg-tier-label"><span class="dg-badge"><span lang="zh-CN">访客</span><span lang="en">Guest</span></span><strong lang="zh-CN">测试者</strong><strong lang="en">Testers</strong></div><div class="dg-tier-nodes">
+          <div class="dg-node"><span class="dg-icon" data-icon="bot"></span><span class="dg-text"><strong>status.dliu.com</strong><small lang="zh-CN">爱尔兰、弗吉尼亚、东京每 15 分钟；中国大陆每小时（只看首页和 /health）</small><small lang="en">Ireland, Virginia, Tokyo every 15 min; mainland China hourly (home page and /health only)</small></span></div>
+        </div></div>
+        <div class="dg-link"><span class="dg-arrow"></span><span lang="zh-CN">HTTPS，不登录</span><span lang="en">HTTPS, no sign-in</span></div>
+        <div class="dg-tier dg-edge"><div class="dg-tier-label"><span class="dg-badge"><span lang="zh-CN">边缘</span><span lang="en">Edge</span></span><strong>CloudFront</strong></div><div class="dg-tier-nodes">
+          <div class="dg-node"><span class="dg-icon" data-icon="page"></span><span class="dg-text"><strong lang="zh-CN">页面</strong><strong lang="en">Pages</strong><small lang="zh-CN">首页和 /docs 能打开</small><small lang="en">the home page and /docs open</small></span></div>
+          <div class="dg-node"><span class="dg-icon" data-icon="cloudfront"></span><span class="dg-text"><strong lang="zh-CN">公开风景照片</strong><strong lang="en">Public scenery photos</strong><small lang="zh-CN">/api/public 和两张照片，从边缘缓存提供</small><small lang="en">/api/public and the two photos, served from the edge cache</small></span></div>
+        </div></div>
+        <div class="dg-link"><span class="dg-arrow"></span><span lang="zh-CN">登录、私人回忆和 /health 交给 Lambda</span><span lang="en">sign-in, private memories and /health go to the Lambda</span></div>
+        <div class="dg-tier dg-app"><div class="dg-tier-label"><span class="dg-badge"><span lang="zh-CN">按需</span><span lang="en">On demand</span></span><strong lang="zh-CN">应用</strong><strong lang="en">App</strong></div><div class="dg-tier-nodes">
+          <div class="dg-node"><span class="dg-icon" data-icon="lambda"></span><span class="dg-text"><strong>Lambda API</strong><small lang="zh-CN">/api/me 回答“没登录”；/api/story 必须拒绝访客；/health 最多每分钟自查一次</small><small lang="en">/api/me answers "not signed in"; /api/story must refuse guests; /health checks the back end at most once a minute</small></span></div>
+          <div class="dg-node"><span class="dg-icon" data-icon="entra"></span><span class="dg-text"><strong>Microsoft Entra</strong><small lang="zh-CN">“登录”链接 /auth/login 把人带到 Microsoft</small><small lang="en">the "Sign in" link /auth/login leads to Microsoft</small></span></div>
+        </div></div>
+        <div class="dg-link"><span class="dg-arrow"></span><span lang="zh-CN">/health 每个依赖读一次，不读私人内容</span><span lang="en">/health reads each dependency once, nothing private</span></div>
+        <div class="dg-tier dg-private"><div class="dg-tier-label"><span class="dg-badge"><span lang="zh-CN">私有</span><span lang="en">Private</span></span><strong lang="zh-CN">存储</strong><strong lang="en">Storage</strong></div><div class="dg-tier-nodes">
+          <div class="dg-node"><span class="dg-icon" data-icon="dynamodb"></span><span class="dg-text"><strong lang="zh-CN">回忆存储</strong><strong lang="en">Memory storage</strong><small lang="zh-CN">DynamoDB：读一个固定的空位置</small><small lang="en">DynamoDB: one fixed, empty key</small></span></div>
+          <div class="dg-node"><span class="dg-icon" data-icon="s3"></span><span class="dg-text"><strong lang="zh-CN">私人媒体存储</strong><strong lang="en">Private media storage</strong><small lang="zh-CN">S3：确认一个已知文件在，不下载</small><small lang="en">S3: one known file is there, nothing downloaded</small></span></div>
+          <div class="dg-node"><span class="dg-icon" data-icon="ssm"></span><span class="dg-text"><strong lang="zh-CN">登录设置</strong><strong lang="en">Sign-in settings</strong><small lang="zh-CN">SSM：网站本来就会读的登录设置</small><small lang="en">SSM: the sign-in settings the site already reads</small></span></div>
+        </div></div>
+      </figure>
+
+      <figure class="dg">
+      <figcaption><span lang="zh-CN">一轮测试</span><span lang="en">One test run</span></figcaption>
       <div class="dg-flow">
         <div class="dg-step dg-untrusted"><span class="dg-num">1</span><span class="dg-text"><strong>status.dliu.com</strong><small lang="zh-CN">以访客身份，从 3 个地方来访</small><small lang="en">visits as a guest, from 3 places</small></span></div>
-        <span class="dg-arrow" aria-hidden="true">→</span>
+        <span class="dg-arrow"></span>
         <div class="dg-step dg-edge"><span class="dg-num">2</span><span class="dg-text"><strong lang="zh-CN">打开公开页面</strong><strong lang="en">Opens the public pages</strong><small lang="zh-CN">入口、文档、风景照片、登录按钮</small><small lang="en">entrance, docs, scenery photos, the sign-in button</small></span></div>
-        <span class="dg-arrow" aria-hidden="true">→</span>
+        <span class="dg-arrow"></span>
         <div class="dg-step dg-edge"><span class="dg-num">3</span><span class="dg-text"><strong lang="zh-CN">敲一敲私人的门</strong><strong lang="en">Knocks on the private door</strong><small lang="zh-CN">私人回忆必须拒绝访客</small><small lang="en">private memories must turn a guest away</small></span></div>
-        <span class="dg-arrow" aria-hidden="true">→</span>
+        <span class="dg-arrow"></span>
         <div class="dg-step dg-private"><span class="dg-num">4</span><span class="dg-text"><strong lang="zh-CN">网站自查</strong><strong lang="en">The site checks itself</strong><small lang="zh-CN">通过 /health：回忆数据库、私人媒体存储、登录设置各看一眼</small><small lang="en">through /health: one look each at the memory database, private media storage and sign-in settings</small></span></div>
       </div>
-      <h3><span lang="zh-CN">结果</span><span lang="en">Results</span></h3>
+      </figure>
+      <figure class="dg">
+      <figcaption><span lang="zh-CN">结果</span><span lang="en">Results</span></figcaption>
       <div class="dg-flow">
         <div class="dg-step dg-good"><span class="dg-text"><strong lang="zh-CN">正常</strong><strong lang="en">Working</strong><small lang="zh-CN">一切如预期</small><small lang="en">everything as expected</small></span></div>
         <div class="dg-step dg-warn"><span class="dg-text"><strong lang="zh-CN">变慢</strong><strong lang="en">Slow</strong><small lang="zh-CN">能用，但比平时慢；或者失败过一次</small><small lang="en">working but slower than usual, or failed once</small></span></div>
         <div class="dg-step dg-bad"><span class="dg-text"><strong lang="zh-CN">故障</strong><strong lang="en">Not working</strong><small lang="zh-CN">连续两轮都失败</small><small lang="en">failed two runs in a row</small></span></div>
       </div>
+      </figure>
 
       <h2><span lang="zh-CN">每项功能</span><span lang="en">Each function</span></h2>
       <div class="table-wrap"><table>
